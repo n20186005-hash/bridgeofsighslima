@@ -48,9 +48,9 @@ La propiedad configurada es `G-HXM22WWPKP`. El script no se carga hasta que el v
 
 La página utiliza fotografías reales de Wikimedia Commons con atribución visible. Consulte `PHOTO_SOURCES.md` y los Términos de uso para autoría y licencias.
 
-## Nota sobre el entorno de entrega
+## Nota sobre la entrega (imágenes 100 % locales, 3 de septiembre de 2026)
 
-El entorno de ejecución utilizado para preparar este paquete no dispone de salida de red desde la terminal hacia el registro de npm ni hacia Wikimedia. Por ese motivo no fue posible generar desde la terminal un `pnpm-lock.yaml` nuevo ni descargar físicamente las fotografías en `public/images` durante esta sesión. El código usa las fotografías reales mediante sus URLs de Wikimedia Commons y conserva fuentes/licencias. Antes de una entrega de producción que exija recursos 100 % locales, deben descargarse esas imágenes, sustituirse las cuatro constantes fotográficas de `src/pages/index.astro` por rutas `/images/...` y generar el lockfile en un entorno con acceso al registro.
+Las cuatro fotografías se sirven ahora desde este mismo sitio (`public/images`), copias optimizadas con `sharp` (héroe 1600 px de ancho máximo; 1000/1400/1100 px el resto; JPEG q80 mozjpeg) a partir de los originales de Wikimedia Commons. Las cuatro constantes de `src/pages/index.astro` apuntan a `/images/...`, por lo que la portada ya **no depende de `upload.wikimedia.org`**; la atribución y licencia de cada imagen se conservan en su pie de foto y en `PHOTO_SOURCES.md`. Tamaño resultante: ~0,9 MB en total (el héroe, 0,41 MB, muy por debajo del límite de 25 MiB por asset de Cloudflare Workers).
 
 ## Actualización de contenido (3 de septiembre de 2026)
 
