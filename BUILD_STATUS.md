@@ -126,3 +126,16 @@ El primer `npx wrangler deploy` del CI falló con `[ERROR] Asset too large`: `di
 1. Eliminados los 4 JPG y la carpeta `public/images` (sin referencias en código, README ni `SHA256SUMS.txt`).
 2. `wrangler.jsonc`: `name` alineado a `bridgeofsighslima` (el CI ya aplicaba override con ese nombre y ofrecía abrir un PR; ahora coincide).
 3. Verificación local: `pnpm build` exit 0 (5 páginas); `npm run audit:compliance` **85/85**; `npm run audit:content` superada; mayores assets de `dist` ahora son `index.html` 0,07 MB y CSS/PNG ≤0,03 MB (19 ficheros, todos muy por debajo de 25 MiB).
+
+---
+
+## Ronda 2026-09-03 (fotografías locales): la portada ya no depende de Wikimedia
+
+Tras el despliegue el cliente informó de que las fotos no se veían en la página: el código apuntaba a `upload.wikimedia.org`, inaccesible desde ciertas redes. Los 4 JPG de `public/images` eran precisamente las copias locales de esas cuatro fotografías (con los nombres lógicos usados en `src/pages/index.astro`), reintroducidas para servir las imágenes desde el propio sitio. Se corrige para usarlas:
+
+1. **Restauradas desde git** las 4 imágenes (se conservaban en `HEAD`) y **optimizadas con `sharp`** (la copia binaria vive en el store de pnpm; rotación EXIF aplicada, ancho máximo igual al thumb anterior —héroe 1600, madera 1000, bajada 1400, ermita 1100— JPEG q80 mozjpeg progresivo): hero 6960×4640 (33,12 MB) → 1600 px (0,41 MB, **-99 %**); resto → 0,11/0,20/0,17 MB. Total `public/images` ≈ **0,9 MB** (holgado frente a los 25 MiB por asset de Workers).
+2. **`src/pages/index.astro`**: las cuatro constantes `PHOTO_HERO`/`PHOTO_BRIDGE`/`PHOTO_BAJADA`/`PHOTO_ERMITA` pasan de URLs de `upload.wikimedia.org` a rutas `/images/*.jpg`; nueva constante `heroImage` (URL absoluta) usada en `placeSchema.image` y en `WebPage.primaryImageOfPage`. Los pies de foto conservan autoría y licencia (HLaiza, Ivan Brehaut L., Nina Zaitceva, Herwarth Morales — CC BY-SA 4.0). `og:image`/`twitter:image` se construyen con `new URL(imagePath, Astro.site)` en `BaseLayout`, con lo que siguen siendo absolutas.
+3. **`src/layouts/BaseLayout.astro`**: eliminados `preconnect`/`dns-prefetch` hacia `upload.wikimedia.org` (ya no hay recursos externos de imagen).
+4. Documentación: `README.md` y `PHOTO_SOURCES.md` actualizados (origen, ancho, tamaño y licencia de cada copia local; los originales sin comprimir quedan en el historial de git).
+
+Verificación local estática: `read_lints` 0 errores; cero referencias restantes a `upload.wikimedia.org` en `src/`. La compilación (`pnpm build` + auditorías 85/85 y de contenido) se confirmará en el CI al desplegar.

@@ -20,17 +20,15 @@ Las imágenes son fotografías reales y no generadas.
 
 Al crear copias locales o adaptaciones, deben preservarse la atribución y las condiciones de las licencias correspondientes.
 
-## Nota sobre optimización (3 de septiembre de 2026)
+## Localización de las fotografías (3 de septiembre de 2026)
 
-Para acelerar la carga, la portada no enlaza los archivos originales completos sino miniaturas escaladas por el propio servicio de Wikimedia (`/thumb/<ruta>/<ancho>px-<archivo>`):
+Las cuatro imágenes se sirven ahora desde `public/images` (mismo sitio, independencia de Wikimedia):
 
-1. Original → 1600 px (fondo del héroe).
-2. Original → 1000 px (cuerpo, recorte vertical 4:5).
-3. Original → 1400 px (cuerpo, recorte 16:10).
-4. Original → 1100 px (cuerpo, recorte cuadrado).
+| Posición en la portada | Archivo local | Ancho máximo | Resultado |
+| --- | --- | --- | --- |
+| Fondo del héroe (`og:image` y entidad JSON-LD) | `puente-suspiros-hero.jpg` | 1600 px | 0,41 MB |
+| Cuerpo, recorte vertical 4:5 | `puente-suspiros-madera.jpg` | 1000 px | 0,11 MB |
+| Cuerpo, recorte 16:10 | `bajada-de-banos.jpg` | 1400 px | 0,20 MB |
+| Cuerpo, recorte cuadrado | `puente-ermita.jpg` | 1100 px | 0,17 MB |
 
-Las URLs de página (autoría/licencia) no cambian. Si en el futuro se descargan copias locales, lo recomendado es replicar esos anchos máximos (1600/1000/1400/1100 px) y apuntar las cuatro constantes de `src/pages/index.astro` a `/images/...`, conservando los mismos nombres lógicos y atribuciones.
-
-## Actualización (3 de septiembre de 2026)
-
-Las copias locales sin comprimir que existían en `public/images` (≈46 MB en total) fueron eliminadas porque el sitio no las referenciaba y encarecían el despliegue. La imagen de portada se sirve como miniatura 1600 px desde Wikimedia y también es la usada en `og:image`/`twitter:image` y en la entidad JSON-LD. Para lograr independencia total de Wikimedia en el futuro: descargar los 4 archivos originales, comprimirlos a los anchos indicados arriba, guardarlos en `public/images` con los nombres lógicos actuales y cambiar las cuatro constantes de `src/pages/index.astro` a rutas locales; conviene además revisar los avisos de privacidad que mencionan el alojamiento externo.
+Cada archivo local es una copia optimizada con `sharp` (rotación EXIF aplicada, JPEG q80 mozjpeg progresivo) del original de Wikimedia Commons listado arriba; la autoría, la página de origen y la licencia CC BY-SA 4.0 no cambian y se muestran en el pie de foto de cada imagen. Las cuatro constantes de `src/pages/index.astro` apuntan a esas rutas `/images/...` y la página ya no contacta con `upload.wikimedia.org`. El original sin comprimir de cada archivo se conserva en el historial de git por si se necesita regenerar.
