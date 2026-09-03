@@ -12,7 +12,13 @@
   --linea: #d8c8b2;
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  /* Deja aire bajo el encabezado fijo al saltar a una sección por ancla. */
+  scroll-padding-top: 5rem;
+}
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
 body {
   margin: 0;
   background: var(--crema);

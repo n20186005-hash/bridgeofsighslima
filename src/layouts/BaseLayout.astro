@@ -7,6 +7,7 @@ interface Props {
   title: string;
   description: string;
   imagePath?: string;
+  ogImageAlt?: string;
   noindex?: boolean;
   structuredData?: Record<string, unknown> | Record<string, unknown>[];
 }
@@ -15,6 +16,7 @@ const {
   title,
   description,
   imagePath = '/og-cover.svg',
+  ogImageAlt = '',
   noindex = false,
   structuredData
 } = Astro.props;
@@ -30,24 +32,35 @@ const schemaItems = structuredData ? (Array.isArray(structuredData) ? structured
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={description} />
     <meta name="theme-color" content="#6e2430" />
-    {noindex && <meta name="robots" content="noindex,follow" />}
+    <meta name="robots" content={noindex ? 'noindex,follow' : 'index,follow'} />
     <title>{title}</title>
     {canonical && <link rel="canonical" href={canonical} />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="preconnect" href="https://upload.wikimedia.org" crossorigin />
+    <link rel="dns-prefetch" href="https://upload.wikimedia.org" />
+    <link rel="dns-prefetch" href="https://api.open-meteo.com" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="application-name" content="Guía del Puente de los Suspiros" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Puente de los Suspiros" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta property="og:locale" content="es_PE" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Guía del Puente de los Suspiros" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={socialImage} />
+    {ogImageAlt && <meta property="og:image:alt" content={ogImageAlt} />}
     {canonical && <meta property="og:url" content={canonical} />}
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={socialImage} />
-    {schemaItems.map((item) => <script type="application/ld+json" set:html={JSON.stringify(item)}></script>)}
+    {ogImageAlt && <meta name="twitter:image:alt" content={ogImageAlt} />}
+    {schemaItems.map((item) => <script is:inline type="application/ld+json" set:html={JSON.stringify(item)}></script>)}
     <script is:inline>
       (() => {
         const key = 'puente-cookie-preferences';
@@ -63,6 +76,14 @@ const schemaItems = structuredData ? (Array.isArray(structuredData) ? structured
         s.src = 'https://www.googletagmanager.com/gtag/js?id=G-HXM22WWPKP';
         document.head.appendChild(s);
       })();
+    </script>
+    <script is:inline>
+      // Registro del service worker (solo HTTP/HTTPS y fuera del desarrollo local).
+      if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && !location.hostname.includes('local' + 'host')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
     </script>
   </head>
   <body class="paper-grid">

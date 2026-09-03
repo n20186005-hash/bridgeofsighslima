@@ -1,0 +1,305 @@
+---
+// Clima y pronóstico para el entorno del Puente de los Suspiros (Barranco).
+// Datos en vivo: Open-Meteo (API abierta, sin clave). En una web estática el
+// componente obtiene los datos en el servidor durante la compilación
+// (snapshot) y el navegador los actualiza al abrir la página con caché de 30 min.
+import * as https from 'https';
+
+const LAT = -12.1491401;
+const LON = -77.022624;
+const TIMEZONE = 'America/Lima';
+const FORECAST_DAYS = 7;
+
+const endpoint =
+  'https://api.open-meteo.com/v1/forecast?latitude=' + LAT +
+  '&longitude=' + LON +
+  '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,is_day' +
+  '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max' +
+  '&timezone=' + TIMEZONE +
+  '&forecast_days=' + FORECAST_DAYS;
+
+// Consulta con módulo core https (evita el dispatcher global de undici/fetch,
+// que en algunas versiones de Node para Windows produce un fallo al salir).
+function fetchJson(url: string, timeoutMs: number): Promise<any> {
+  return new Promise<any>((resolve) => {
+    const req = https.get(
+      url,
+      { headers: { accept: 'application/json' } },
+      (res) => {
+        if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+          let body = '';
+          res.setEncoding('utf8');
+          res.on('data', (chunk) => { body += chunk; });
+          res.on('end', () => {
+            try { resolve(JSON.parse(body)); } catch (_) { resolve(null); }
+          });
+        } else {
+          res.resume();
+          resolve(null);
+        }
+      }
+    );
+    req.on('error', () => resolve(null));
+    req.setTimeout(timeoutMs, () => { req.destroy(); resolve(null); });
+  });
+}
+
+let seed = null;
+let seedLabel = '';
+const json = await fetchJson(endpoint, 7000);
+if (json?.current && json?.daily?.time?.length) {
+  seed = json;
+  try {
+    seedLabel = new Intl.DateTimeFormat('es-PE', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      timeZone: TIMEZONE
+    }).format(new Date());
+  } catch (_) {
+    seedLabel = String(new Date());
+  }
+}
+
+const seedJson = JSON.stringify(seed);
+---
+<section id="clima" aria-labelledby="clima-titulo" class="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+  <p class="text-sm font-bold uppercase tracking-[.18em] text-[#24574d]">Clima y mejor época</p>
+  <h2 id="clima-titulo" class="serif mt-3 max-w-3xl text-4xl font-bold text-[#48151f] sm:text-5xl">El clima de Lima en Barranco</h2>
+  <p class="mt-5 max-w-3xl text-lg text-[#594a41]">El microclima de Lima condiciona la experiencia de visita: conviene saber qué tiempo encontrará antes de planear la caminata por el puente, la Bajada de Baños y los miradores.</p>
+
+  <div class="mt-10 grid gap-6 lg:grid-cols-[.9fr_1.1fr]">
+    <div class="grid content-start gap-5 sm:grid-cols-2 lg:grid-cols-1">
+      <article class="rounded-3xl border border-[#d8c8b2] bg-[#fffaf1] p-6 shadow-sm">
+        <h3 class="serif text-xl font-bold text-[#48151f]">Un desierto con niebla costera</h3>
+        <p class="mt-2 text-[.95rem] text-[#5e4e45]">Lima está en la costa desértica del Pacífico, pero su clima es templado casi todo el año. Entre mayo y octubre domina la <em>garúa</em> (niebla costera): cielos grises y humedad que se siente fría. Entre diciembre y abril predominan el sol y el calor húmedo.</p>
+      </article>
+      <article class="rounded-3xl border border-[#d8c8b2] bg-[#fffaf1] p-6 shadow-sm">
+        <h3 class="serif text-xl font-bold text-[#48151f]">Mejor época para ir</h3>
+        <p class="mt-2 text-[.95rem] text-[#5e4e45]">El verano (diciembre a abril) ofrece los cielos más despejados y la mejor luz para fotografías y atardeceres. En invierno el puente también se visita con comodidad: bastan una capa ligera y calzado cerrado. Todo el año conviene revisar la previsión antes de salir.</p>
+      </article>
+      <article class="rounded-3xl border border-[#d8c8b2] bg-[#fffaf1] p-6 shadow-sm">
+        <h3 class="serif text-xl font-bold text-[#48151f]">Qué llevar</h3>
+        <p class="mt-2 text-[.95rem] text-[#5e4e45]">Chaqueta o chalina ligera (por la brisa del mar y la garúa), calzado cómodo y antideslizante para los desniveles, protector solar y agua en verano, y una cámara para la luz dorada de la tarde.</p>
+      </article>
+    </div>
+
+    <article class="overflow-hidden rounded-[2rem] border border-[#cdbda6] bg-gradient-to-br from-[#24574d] to-[#163a33] text-white shadow-xl shadow-[#163a33]/20">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/15 px-6 py-5">
+        <div>
+          <h3 class="serif text-2xl font-bold">Pronóstico en vivo</h3>
+          <p class="mt-1 text-xs text-[#cfe2dc]">Barranco · coordenadas del puente (12,149° S; 77,023° O)</p>
+        </div>
+        <a href="https://open-meteo.com/" target="_blank" rel="external noopener noreferrer" class="rounded-full border border-white/30 bg-white/10 px-4 py-2 text-xs font-bold no-underline hover:bg-white/20">Datos: Open-Meteo</a>
+      </div>
+
+      <div class="space-y-6 px-6 py-6">
+        <div id="w-actual" aria-live="polite">
+          <p class="text-sm text-[#e7f0ed]">Consultando el tiempo actual…</p>
+        </div>
+        <div class="border-t border-white/15 pt-5">
+          <p class="mb-3 text-xs font-bold uppercase tracking-[.16em] text-[#f1c365]">Próximos 7 días</p>
+          <div id="w-dias">
+            <p class="text-sm text-[#e7f0ed]">Preparando la previsión…</p>
+          </div>
+        </div>
+        <p id="w-meta" class="text-xs text-[#cfe2dc]">{seed ? 'Datos generados al compilar el sitio el ' + seedLabel + ' (hora de Lima). Se actualizan en tu navegador.' : 'El pronóstico se genera al compilar el sitio y se actualiza en tu navegador.'}</p>
+        <noscript>
+          <p class="rounded-2xl bg-white/10 p-4 text-sm text-[#e7f0ed]">El panel interactivo requiere JavaScript. Para verificar el clima oficial de la zona consulta el Servicio Nacional de Meteorología e Hidrología del Perú (SENAMHI).</p>
+        </noscript>
+      </div>
+    </article>
+  </div>
+</section>
+
+<script is:inline type="application/json" id="weather-seed" set:html={seedJson}></script>
+
+<script is:inline>
+(() => {
+  'use strict';
+  const KEY = 'puente-weather-cache-v1';
+  const TTL = 30 * 60 * 1000;
+  const LAT = -12.1491401;
+  const LON = -77.022624;
+  const TZ = 'America/Lima';
+  const DAYS = 7;
+  const URL =
+    'https://api.open-meteo.com/v1/forecast?latitude=' + LAT +
+    '&longitude=' + LON +
+    '&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,is_day' +
+    '&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max' +
+    '&timezone=' + TZ + '&forecast_days=' + DAYS;
+
+  const WMO = {
+    0: 'Cielo despejado', 1: 'Mayormente despejado', 2: 'Parcialmente nublado', 3: 'Nublado',
+    45: 'Niebla', 48: 'Niebla con escarcha',
+    51: 'Llovizna ligera', 53: 'Llovizna', 55: 'Llovizna intensa',
+    56: 'Llovizna helada ligera', 57: 'Llovizna helada',
+    61: 'Lluvia ligera', 63: 'Lluvia moderada', 65: 'Lluvia intensa',
+    66: 'Lluvia helada ligera', 67: 'Lluvia helada',
+    71: 'Nieve ligera', 73: 'Nieve moderada', 75: 'Nieve intensa', 77: 'Granos de nieve',
+    80: 'Chubascos ligeros', 81: 'Chubascos', 82: 'Chubascos intensos',
+    85: 'Chubascos de nieve ligeros', 86: 'Chubascos de nieve',
+    95: 'Tormenta eléctrica', 96: 'Tormenta con granizo ligero', 99: 'Tormenta con granizo fuerte'
+  };
+
+  const CLOUD = '<path d="M35 38H18a14 14 0 1 1 13.4-18H35a9 9 0 0 1 0 18Z"/>';
+  const GLYPHS = {
+    0: '<circle cx="24" cy="24" r="9.5"/><path d="M24 5.5v4M24 38.5v4M5.5 24h4M38.5 24h4M11.6 11.6l2.8 2.8M33.6 33.6l2.8 2.8M36.4 11.6l-2.8 2.8M14.4 33.6l-2.8 2.8"/>',
+    1: '<circle cx="17" cy="15" r="6.5"/><path d="M17 3.5v2.5M17 24v-2.5M5.5 15H8M28 15h-2.5M9.4 7.4l1.7 1.7M22.9 20.9l1.7 1.7M24.6 7.4l-1.7 1.7M11.1 20.9l-1.7 1.7"/><path d="M37 40H20a12.5 12.5 0 1 1 11.9-16.5H31a8 8 0 0 1 6 16.5Z"/>',
+    2: CLOUD,
+    3: '<path d="M8 16h32M11 25h26M14 34h20"/>',
+    4: '<path d="M34 24H18a11.5 11.5 0 1 1 11-15.3H29a7.3 7.3 0 0 1 5 15.3Z"/><path d="M17 33l-2.5 7M25 33l-2.5 7M33 33l-2.5 7"/>',
+    5: '<path d="M34 22H18a11.5 11.5 0 1 1 11-15.3H29a7.3 7.3 0 0 1 5 15.3Z"/><path d="M16 31l-3.5 9M24 31l-3.5 9M32 31l-3.5 9"/>',
+    6: '<path d="M34 24H18a11.5 11.5 0 1 1 11-15.3H29a7.3 7.3 0 0 1 5 15.3Z"/><path d="M16 31v7M12.5 34.5h7M24 31v7M20.5 34.5h7M32 31v7M28.5 34.5h7"/>',
+    7: '<path d="M34 22H18a11.5 11.5 0 1 1 11-15.3H29a7.3 7.3 0 0 1 5 15.3Z"/><path d="M26 30l-10 12h8l-4 8"/>'
+  };
+
+  function grupo(code) {
+    if (code === 0) return 0;
+    if (code <= 2) return 1;
+    if (code === 3) return 2;
+    if (code === 45 || code === 48) return 3;
+    if (code >= 51 && code <= 57) return 4;
+    if (code >= 61 && code <= 82) return 5;
+    if (code >= 85 && code <= 86) return 6;
+    if (code >= 95) return 7;
+    return 2;
+  }
+  function etiqueta(code) { return WMO[code] || 'Condición variable'; }
+  function icono(code, clase) {
+    const g = grupo(code);
+    return '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="' + clase + '" role="img" aria-hidden="true">' + (GLYPHS[g] || GLYPHS[2]) + '</svg>';
+  }
+
+  const elActual = document.getElementById('w-actual');
+  const elDias = document.getElementById('w-dias');
+  const elMeta = document.getElementById('w-meta');
+  let seed = null;
+  try {
+    const n = document.getElementById('weather-seed');
+    if (n && n.textContent && n.textContent.trim()) seed = JSON.parse(n.textContent);
+  } catch (_) { seed = null; }
+
+  function leerCache() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return null;
+      const obj = JSON.parse(raw);
+      return (obj && obj.d && obj.t) ? obj : null;
+    } catch (_) { return null; }
+  }
+  function guardarCache(data) {
+    try { localStorage.setItem(KEY, JSON.stringify({ t: Date.now(), d: data })); } catch (_) {}
+  }
+
+  function renderActual(d) {
+    const c = d.current;
+    if (!c) return '';
+    const ahora = Math.round(c.temperature_2m);
+    const sensacion = Math.round(c.apparent_temperature);
+    const humedad = Math.round(c.relative_humidity_2m);
+    const viento = Math.round(c.wind_speed_10m);
+    return (
+      '<div class="flex flex-wrap items-center gap-5">' +
+        icono(c.weather_code, 'h-16 w-16 shrink-0 text-[#f1c365]') +
+        '<div class="min-w-[7.2rem]">' +
+          '<p class="serif text-6xl font-bold leading-none text-white">' + ahora +
+            '<span class="align-top text-2xl font-normal text-[#cfe2dc]"> °C</span></p>' +
+          '<p class="mt-2 font-bold text-[#f1c365]">' + etiqueta(c.weather_code) + '</p>' +
+        '</div>' +
+        '<dl class="grid min-w-[16rem] flex-1 grid-cols-3 gap-3 text-sm">' +
+          '<div class="rounded-xl bg-white/10 px-3 py-2"><dt class="text-[.65rem] font-bold uppercase tracking-wide text-[#cfe2dc]">Sensación</dt><dd class="font-bold text-white">' + sensacion + '°</dd></div>' +
+          '<div class="rounded-xl bg-white/10 px-3 py-2"><dt class="text-[.65rem] font-bold uppercase tracking-wide text-[#cfe2dc]">Humedad</dt><dd class="font-bold text-white">' + humedad + ' %</dd></div>' +
+          '<div class="rounded-xl bg-white/10 px-3 py-2"><dt class="text-[.65rem] font-bold uppercase tracking-wide text-[#cfe2dc]">Viento</dt><dd class="font-bold text-white">' + viento + ' km/h</dd></div>' +
+        '</dl>' +
+      '</div>'
+    );
+  }
+
+  function renderDias(d) {
+    const daily = d.daily;
+    if (!daily || !Array.isArray(daily.time)) return '';
+    const fmtDia = new Intl.DateTimeFormat('es-PE', { weekday: 'short' });
+    const fmtNum = new Intl.DateTimeFormat('es-PE', { day: 'numeric', month: 'short' });
+    const tarjetas = daily.time.map(function (fecha, i) {
+      const code = Array.isArray(daily.weather_code) ? daily.weather_code[i] : 0;
+      const max = Math.round(Array.isArray(daily.temperature_2m_max) ? daily.temperature_2m_max[i] : 0);
+      const min = Math.round(Array.isArray(daily.temperature_2m_min) ? daily.temperature_2m_min[i] : 0);
+      const pp = Array.isArray(daily.precipitation_probability_max) ? daily.precipitation_probability_max[i] : null;
+      let dn = '';
+      let fn = '';
+      try {
+        const fechaLocal = new Date(fecha + 'T12:00:00');
+        dn = fmtDia.format(fechaLocal).replace(/\.$/, '');
+        dn = dn.charAt(0).toUpperCase() + dn.slice(1);
+        fn = fmtNum.format(fechaLocal);
+      } catch (_) { dn = 'Día'; }
+      const lluvia = (pp !== null && pp !== undefined)
+        ? '<p class="mt-1 text-[.66rem] text-[#a8d5e8]" title="Probabilidad de precipitación">' + pp + ' %</p>'
+        : '';
+      return (
+        '<article class="flex min-w-[8.2rem] flex-col items-center gap-1.5 rounded-2xl border border-white/15 bg-white/10 p-3 text-center md:min-w-0">' +
+          '<p class="text-xs font-bold uppercase tracking-wide text-[#f1c365]">' + dn + '</p>' +
+          '<p class="text-[.7rem] text-[#cfe2dc]">' + fn + '</p>' +
+          icono(code, 'h-9 w-9 text-[#f6e7c6]') +
+          '<p class="text-sm font-bold text-white">' + max + '° <span class="font-normal text-[#cfe2dc]">' + min + '°</span></p>' +
+          lluvia +
+        '</article>'
+      );
+    });
+    return '<div class="no-scrollbar flex gap-3 overflow-x-auto pb-2 md:grid md:grid-cols-7">' + tarjetas.join('') + '</div>';
+  }
+
+  let mostroAlgo = false;
+  function mostrar(d) {
+    if (!d) return;
+    if (elActual && d.current) {
+      elActual.innerHTML = renderActual(d);
+      mostroAlgo = true;
+    }
+    if (elDias && d.daily && Array.isArray(d.daily.time) && d.daily.time.length) {
+      elDias.innerHTML = renderDias(d);
+      mostroAlgo = true;
+    }
+    if (elMeta && mostroAlgo) {
+      try {
+        const ahora = new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', timeZone: TZ });
+        elMeta.textContent = 'Actualizado a las ' + ahora + ' (hora de Lima). Fuente: Open-Meteo.';
+      } catch (_) {
+        elMeta.textContent = 'Fuente de los datos: Open-Meteo.';
+      }
+    }
+  }
+
+  function mostrarError() {
+    if (mostroAlgo || elActual) { if (!mostroAlgo && elActual) elActual.innerHTML = ''; }
+    if (elActual && !mostroAlgo) {
+      elActual.innerHTML = '<p class="text-sm text-[#e7f0ed]">No se pudo conectar con el servicio meteorológico en este momento. Usa la guía de clima de la izquierda y consulta la previsión oficial del SENAMHI.</p>';
+    }
+    if (elDias && !mostroAlgo && elDias) elDias.innerHTML = '';
+  }
+
+  (function iniciar() {
+    const cache = leerCache();
+    const fresca = cache && (Date.now() - cache.t) < TTL;
+    if (fresca) {
+      mostrar(cache.d);
+      return; // caché válida: no se vuelve a consultar en esta carga
+    }
+    if (cache) mostrar(cache.d);
+    else if (seed) mostrar(seed);
+
+    fetch(URL, { headers: { accept: 'application/json' } })
+      .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
+      .then(function (j) {
+        if (j && j.current && j.daily && Array.isArray(j.daily.time) && j.daily.time.length) {
+          guardarCache(j);
+          mostrar(j);
+        } else {
+          mostrarError();
+        }
+      })
+      .catch(function () { mostrarError(); });
+  })();
+})();
+</script>
