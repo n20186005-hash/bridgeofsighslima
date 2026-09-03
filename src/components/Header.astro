@@ -1,0 +1,16 @@
+---
+import Logo from './Logo.astro';
+---
+<header class="sticky top-0 z-50 border-b border-[#d8c8b2]/80 bg-[#f7f0e4]/95 backdrop-blur">
+  <div class="mx-auto flex max-w-7xl items-center justify-between gap-5 px-5 py-3 lg:px-8">
+    <Logo compact />
+    <nav aria-label="Navegación principal" class="hidden items-center gap-6 text-sm font-semibold text-[#4a3d36] md:flex">
+      <a class="focus-ring hover:text-[#6e2430]" href="/#historia">Historia</a>
+      <a class="focus-ring hover:text-[#6e2430]" href="/#visita">Visita</a>
+      <a class="focus-ring hover:text-[#6e2430]" href="/#como-llegar">Cómo llegar</a>
+      <a class="focus-ring hover:text-[#6e2430]" href="/#alrededores">Alrededores</a>
+      <a class="focus-ring hover:text-[#6e2430]" href="/#preguntas">Preguntas</a>
+    </nav>
+    <a href="https://maps.app.goo.gl/JtXw9jp7DcAQgdRu5" target="_blank" rel="noopener noreferrer" class="focus-ring rounded-full bg-[#6e2430] px-4 py-2 text-sm font-bold text-white no-underline shadow-sm transition hover:bg-[#48151f]">Abrir mapa</a>
+  </div>
+</header>

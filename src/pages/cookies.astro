@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Configuración de cookies | Guía del Puente de los Suspiros" description="Administre sus preferencias de cookies para la Guía del Puente de los Suspiros." noindex>
+  <section class="mx-auto max-w-4xl px-5 py-16 lg:px-8">
+    <p class="text-sm font-bold uppercase tracking-[.18em] text-[#24574d]">Preferencias de privacidad</p>
+    <h1 class="serif mt-3 text-5xl font-bold text-[#48151f]">Configuración de cookies</h1>
+    <p class="mt-4 font-semibold text-[#6b5a50]">Última actualización: septiembre de 2026</p>
+    <p class="mt-7 max-w-3xl text-lg text-[#55463e]">Usamos el mínimo almacenamiento necesario para recordar sus preferencias. Las cookies de análisis permanecen desactivadas hasta que usted las habilite.</p>
+
+    <form id="cookie-form" class="mt-10 space-y-5">
+      <div class="rounded-3xl border border-[#d8c8b2] bg-[#fffaf1] p-6 sm:p-7">
+        <div class="flex items-start justify-between gap-6">
+          <div><h2 class="serif text-2xl font-bold text-[#48151f]">Cookies necesarias</h2><p class="mt-2 text-[#5a4b42]">Son esenciales para recordar su elección de consentimiento y no pueden desactivarse desde este panel.</p></div>
+          <span class="rounded-full bg-[#24574d] px-3 py-1 text-xs font-bold text-white">Siempre activas</span>
+        </div>
+      </div>
+
+      <label class="flex cursor-pointer items-start justify-between gap-6 rounded-3xl border border-[#d8c8b2] bg-[#fffaf1] p-6 sm:p-7">
+        <span><strong class="serif block text-2xl text-[#48151f]">Cookies de análisis</strong><span class="mt-2 block text-[#5a4b42]">Google Analytics 4 (G-HXM22WWPKP) ayuda a comprender de forma agregada cómo se utiliza el sitio. Solo se carga cuando esta opción está activada.</span></span>
+        <input id="analytics" name="analytics" type="checkbox" class="mt-2 h-6 w-6 accent-[#6e2430]" />
+      </label>
+
+      <label class="flex cursor-pointer items-start justify-between gap-6 rounded-3xl border border-[#d8c8b2] bg-[#fffaf1] p-6 sm:p-7">
+        <span><strong class="serif block text-2xl text-[#48151f]">Preferencias</strong><span class="mt-2 block text-[#5a4b42]">Permite recordar opciones de presentación o navegación que puedan incorporarse al sitio.</span></span>
+        <input id="preferences" name="preferences" type="checkbox" class="mt-2 h-6 w-6 accent-[#6e2430]" />
+      </label>
+
+      <label class="flex cursor-pointer items-start justify-between gap-6 rounded-3xl border border-[#d8c8b2] bg-[#fffaf1] p-6 sm:p-7">
+        <span><strong class="serif block text-2xl text-[#48151f]">Marketing</strong><span class="mt-2 block text-[#5a4b42]">Este sitio no activa publicidad personalizada. La opción se mantiene desactivada y no carga plataformas publicitarias.</span></span>
+        <input id="marketing" name="marketing" type="checkbox" class="mt-2 h-6 w-6 accent-[#6e2430]" disabled />
+      </label>
+
+      <div class="flex flex-wrap gap-3 pt-3">
+        <button type="submit" class="focus-ring rounded-full bg-[#6e2430] px-6 py-3 font-bold text-white hover:bg-[#48151f]">Guardar preferencias</button>
+        <button type="button" id="reject-all" class="focus-ring rounded-full border border-[#6e2430] px-6 py-3 font-bold text-[#6e2430] hover:bg-[#6e2430]/5">Rechazar todo lo opcional</button>
+      </div>
+      <p id="cookie-status" class="min-h-6 text-sm font-semibold text-[#24574d]" role="status" aria-live="polite"></p>
+    </form>
+
+    <div class="prose-legal mt-14 border-t border-[#d8c8b2] pt-10">
+      <h2>Gestión del consentimiento</h2>
+      <p>Puede volver a esta página en cualquier momento para cambiar su elección. Desactivar una categoría opcional impide nuevas cargas asociadas a esa categoría; para eliminar datos ya almacenados por terceros, puede ser necesario utilizar también los controles de su navegador o del proveedor correspondiente.</p>
+      <h2>Más información</h2>
+      <p>Consulte nuestra <a class="font-semibold text-[#6e2430] underline" href="/privacidad/">Política de privacidad</a> para conocer con más detalle el tratamiento de datos y los servicios externos utilizados.</p>
+    </div>
+  </section>
+
+  <script is:inline>
+    (() => {
+      const key = 'puente-cookie-preferences';
+      const form = document.getElementById('cookie-form');
+      const analytics = document.getElementById('analytics');
+      const preferences = document.getElementById('preferences');
+      const reject = document.getElementById('reject-all');
+      const status = document.getElementById('cookie-status');
+      try {
+        const saved = JSON.parse(localStorage.getItem(key) || 'null');
+        if (saved) {
+          analytics.checked = Boolean(saved.analytics);
+          preferences.checked = Boolean(saved.preferences);
+        }
+      } catch (_) {}
+      form?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        localStorage.setItem(key, JSON.stringify({ necessary: true, analytics: analytics.checked, preferences: preferences.checked, marketing: false }));
+        status.textContent = 'Preferencias guardadas. Los cambios se aplicarán completamente al volver a cargar la página.';
+      });
+      reject?.addEventListener('click', () => {
+        analytics.checked = false;
+        preferences.checked = false;
+        localStorage.setItem(key, JSON.stringify({ necessary: true, analytics: false, preferences: false, marketing: false }));
+        status.textContent = 'Se han rechazado todas las categorías opcionales.';
+      });
+    })();
+  </script>
+</BaseLayout>

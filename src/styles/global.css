@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+:root {
+  --vino: #6e2430;
+  --vino-oscuro: #48151f;
+  --ocre: #d89a2b;
+  --verde: #24574d;
+  --crema: #f7f0e4;
+  --papel: #fffaf1;
+  --tinta: #291f1b;
+  --madera: #443329;
+  --linea: #d8c8b2;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--crema);
+  color: var(--tinta);
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  line-height: 1.65;
+}
+::selection { background: #e7bf72; color: #251711; }
+a { text-underline-offset: 0.2em; }
+.serif { font-family: Georgia, "Times New Roman", serif; }
+.paper-grid {
+  background-image:
+    linear-gradient(rgba(110,36,48,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(110,36,48,.035) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+.bridge-rule {
+  height: 14px;
+  background:
+    linear-gradient(45deg, transparent 43%, var(--vino) 44% 56%, transparent 57%) 0 0/28px 14px,
+    linear-gradient(-45deg, transparent 43%, var(--vino) 44% 56%, transparent 57%) 0 0/28px 14px;
+  opacity: .7;
+}
+.prose-legal h2 { margin-top: 2.25rem; font-family: Georgia, "Times New Roman", serif; font-size: 1.65rem; color: var(--vino-oscuro); }
+.prose-legal h3 { margin-top: 1.5rem; font-weight: 700; color: var(--verde); }
+.prose-legal p, .prose-legal li { color: #4a3d36; }
+.prose-legal ul { padding-left: 1.25rem; list-style: disc; }
+.focus-ring:focus-visible { outline: 3px solid var(--ocre); outline-offset: 4px; }

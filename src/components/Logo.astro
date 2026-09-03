@@ -1,0 +1,14 @@
+---
+const { compact = false } = Astro.props;
+---
+<a href="/" class="focus-ring inline-flex items-center gap-3 no-underline" aria-label="Guía del Puente de los Suspiros">
+  <svg width={compact ? 38 : 46} height={compact ? 38 : 46} viewBox="0 0 64 64" role="img" aria-label="Símbolo del Puente de los Suspiros">
+    <rect x="4" y="4" width="56" height="56" rx="18" fill="#6e2430"/>
+    <path d="M10 39h44M13 39l9-12 10 12 10-12 9 12M15 39v7m34-7v7" fill="none" stroke="#f7f0e4" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M14 48h36" stroke="#d89a2b" stroke-width="4" stroke-linecap="round"/>
+  </svg>
+  <span class:list={["leading-none", compact && "hidden sm:block"]}>
+    <strong class="serif block text-[1.02rem] tracking-wide text-[#48151f]">Puente de los Suspiros</strong>
+    <small class="mt-1 block text-[.7rem] font-semibold uppercase tracking-[.18em] text-[#24574d]">Guía de Barranco</small>
+  </span>
+</a>
