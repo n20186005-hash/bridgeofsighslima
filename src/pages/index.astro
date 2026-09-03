@@ -4,12 +4,16 @@ import MapEmbed from '../components/MapEmbed.astro';
 import Facilities from '../components/Facilities.astro';
 import Weather from '../components/Weather.astro';
 
-// Versiones escaladas por Wikimedia (thumb) para acelerar la carga; el
-// original completo solo se descarga si el CSS lo exige.
-const PHOTO_HERO = 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/PUENTE_DE_LOS_SUSPIROS.jpg/1600px-PUENTE_DE_LOS_SUSPIROS.jpg';
-const PHOTO_BRIDGE = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Puente_de_los_Suspiros%2C_Barranco.jpg/1000px-Puente_de_los_Suspiros%2C_Barranco.jpg';
-const PHOTO_BAJADA = 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Bajada_de_Ba%C3%B1os%2C_Barranco.jpg/1400px-Bajada_de_Ba%C3%B1os%2C_Barranco.jpg';
-const PHOTO_ERMITA = 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Puente_de_los_Suspiros_Barranco.jpg/1100px-Puente_de_los_Suspiros_Barranco.jpg';
+// Fotografías servidas desde este mismo sitio (public/images): copias
+// optimizadas (>=6960px -> 1600px de ancho máximo, JPEG q80 mozjpeg) de las
+// imágenes originales de Wikimedia Commons. La atribución y la licencia de
+// cada una se conservan en su pie de foto.
+const PHOTO_HERO = '/images/puente-suspiros-hero.jpg';
+const PHOTO_BRIDGE = '/images/puente-suspiros-madera.jpg';
+const PHOTO_BAJADA = '/images/bajada-de-banos.jpg';
+const PHOTO_ERMITA = '/images/puente-ermita.jpg';
+
+const heroImage = Astro.site ? new URL(PHOTO_HERO, Astro.site).href : PHOTO_HERO;
 
 const attractionUrl = Astro.site ? new URL('/#puente-de-los-suspiros', Astro.site).href : undefined;
 const homeUrl = Astro.site ? new URL('/', Astro.site).href : undefined;
@@ -21,7 +25,7 @@ const placeSchema = {
   '@type': ['TouristAttraction', 'LandmarksOrHistoricalBuildings'],
   ...(attractionUrl ? { '@id': attractionUrl } : {}),
   ...(homeUrl ? { url: homeUrl } : {}),
-  ...(homeUrl ? { image: [PHOTO_HERO] } : {}),
+  ...(heroImage ? { image: [heroImage] } : {}),
   identifier: {
     '@type': 'PropertyValue',
     propertyID: 'Wikidata',
@@ -199,7 +203,7 @@ const graphSchema = homeUrl ? {
       description: 'Guía independiente del Puente de los Suspiros de Barranco, en Lima (Perú): historia, cómo llegar, mapa, horario, clima, gastronomía y alrededores.',
       isPartOf: { '@id': homeUrl + '#website' },
       about: { '@id': homeUrl + '#puente-de-los-suspiros' },
-      primaryImageOfPage: PHOTO_HERO,
+      primaryImageOfPage: heroImage,
       datePublished: '2026-09-03',
       dateModified: '2026-09-03',
       inLanguage: 'es-PE'

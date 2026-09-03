@@ -107,6 +107,22 @@ Auditoría reproducible creada e integrada: `scripts/compliance-audit.mjs` (`npm
 ### Decisiones registradas (no son fallos)
 
 - El `pb` embed conserva las coordenadas, el marcador y su etiqueta original; solo la interfaz del mapa se sirve en `es` (coherencia de idioma del sitio; decisión análoga a la documentada en otros proyectos del mismo checklist).
-- `wrangler.jsonc` sigue con `name = "puente-suspiros-barranco"`: para el despliegue de activos estáticos de Astro no hay binding auto-referencial (a diferencia de OpenNext), por lo que el nombre del Worker es independiente; basta con apuntar el dominio `bridgeofsighslima.com` al Worker existente en Cloudflare.
+- `wrangler.jsonc` usa `name = "bridgeofsighslima"`, alineado con el nombre de Worker que espera el sistema CI de Cloudflare Workers (que, si no coincide, aplica override y abre un PR de corrección).
 - Sin `maskable` independiente (los iconos existentes no tienen zona de seguridad de máscara); mejora opcional de PWA, no un incumplimiento.
 - Sitio de una sola lengua (`es-PE`): no aplican `hreflang` ni `x-default`.
+
+---
+
+## Ronda 2026-09-03 (despliegue CI): superado el límite de assets
+
+El primer `npx wrangler deploy` del CI falló con `[ERROR] Asset too large`: `dist/images/puente-suspiros-hero.jpg` pesaba **33,1 MiB** y Cloudflare Workers admite assets de hasta 25 MiB.
+
+### Causa raíz
+
+`public/images/` contenía 4 fotos originales sin comprimir (~43 MB: hero 33,1 + bajada-de-banos 3,4 + puente-ermita 2,1 + puente-suspiros-madera 4,7 MB) que Astro copia tal cual a `dist/`. No había **ninguna referencia** en `src/` (las fotografías del sitio se sirven por sus URLs de Wikimedia y las cuatro constantes de `src/pages/index.astro` apuntan a `upload.wikimedia.org`), por lo que eran ficheros huérfanos reintroducidos tras una limpieza anterior.
+
+### Corrección aplicada
+
+1. Eliminados los 4 JPG y la carpeta `public/images` (sin referencias en código, README ni `SHA256SUMS.txt`).
+2. `wrangler.jsonc`: `name` alineado a `bridgeofsighslima` (el CI ya aplicaba override con ese nombre y ofrecía abrir un PR; ahora coincide).
+3. Verificación local: `pnpm build` exit 0 (5 páginas); `npm run audit:compliance` **85/85**; `npm run audit:content` superada; mayores assets de `dist` ahora son `index.html` 0,07 MB y CSS/PNG ≤0,03 MB (19 ficheros, todos muy por debajo de 25 MiB).
