@@ -1,0 +1,323 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MapEmbed from '../components/MapEmbed.astro';
+import Facilities from '../components/Facilities.astro';
+import Weather from '../components/Weather.astro';
+import SeasonalStrategy from '../components/SeasonalStrategy.astro';
+import Environment from '../components/Environment.astro';
+import Itineraries from '../components/Itineraries.astro';
+import Responsibility from '../components/Responsibility.astro';
+import { guide, buildPlaceSchema, buildFaqSchema, clarification, type GuideContent } from '../data/guide';
+import { type Locale } from '../i18n';
+
+const { locale = 'es' as Locale } = Astro.props;
+const g: GuideContent = guide[locale];
+const clar = clarification[locale];
+const anchorBase = locale === 'en' ? '/en' : '';
+
+const PHOTO_HERO = '/images/puente-suspiros-hero.jpg';
+const PHOTO_BRIDGE = '/images/puente-suspiros-madera.jpg';
+const PHOTO_BAJADA = '/images/bajada-de-banos.jpg';
+const PHOTO_ERMITA = '/images/puente-ermita.jpg';
+
+const heroImage = Astro.site ? new URL(PHOTO_HERO, Astro.site).href : PHOTO_HERO;
+const attractionUrl = Astro.site ? new URL('/#puente-de-los-suspiros', Astro.site).href : undefined;
+const homeUrl = Astro.site ? new URL('/' + (locale === 'en' ? 'en/' : ''), Astro.site).href : undefined;
+const mapsShareUrl = 'https://maps.app.goo.gl/JtXw9jp7DcAQgdRu5';
+
+const placeSchema = buildPlaceSchema(locale);
+// Añadimos la aclaración de "casa de los suspiros" al final de las FAQ.
+const faq = [...g.faq, { q: clar.q, a: clar.a }];
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faq.map((item) => ({
+    '@type': 'Question',
+    name: item.q,
+    acceptedAnswer: { '@type': 'Answer', text: item.a }
+  }))
+};
+
+const graphSchema = homeUrl ? {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': homeUrl + '#organization',
+      name: 'Guía del Puente de los Suspiros',
+      url: homeUrl,
+      logo: homeUrl + 'favicon.svg'
+    },
+    {
+      '@type': 'WebSite',
+      '@id': homeUrl + '#website',
+      url: homeUrl,
+      name: 'Guía del Puente de los Suspiros',
+      inLanguage: locale === 'en' ? 'en' : 'es-PE',
+      publisher: { '@id': homeUrl + '#organization' }
+    },
+    {
+      '@type': 'WebPage',
+      '@id': homeUrl + '#webpage',
+      url: homeUrl,
+      name: g.schema.webPageName,
+      description: g.schema.webPageDescription,
+      isPartOf: { '@id': homeUrl + '#website' },
+      about: { '@id': homeUrl + '#puente-de-los-suspiros' },
+      primaryImageOfPage: heroImage,
+      datePublished: '2026-09-03',
+      dateModified: '2026-09-03',
+      inLanguage: locale === 'en' ? 'en' : 'es-PE'
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': homeUrl + '#breadcrumb',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: locale === 'en' ? 'Home' : 'Inicio', item: homeUrl },
+        { '@type': 'ListItem', position: 2, name: 'Puente de los Suspiros', item: homeUrl + '#puente-de-los-suspiros' }
+      ]
+    }
+  ]
+} : undefined;
+
+const alt = locale === 'en'
+  ? {
+      hero: 'Bridge of Sighs (Puente de los Suspiros) in Barranco, historic wooden bridge in Lima, Peru',
+      bridge: 'Wooden structure of the Bridge of Sighs in Barranco',
+      bajada: 'Bajada de Baños in Barranco, historic path beneath the Bridge of Sighs',
+      ermita: 'Bridge of Sighs with palm trees and the Ermita de Barranco in the background'
+    }
+  : {
+      hero: 'Puente de los Suspiros (Bridge of Sighs) de Barranco, puente histórico de madera en Lima, Perú',
+      bridge: 'Estructura de madera del Puente de los Suspiros en Barranco',
+      bajada: 'Bajada de Baños de Barranco, camino histórico que pasa bajo el Puente de los Suspiros (Bridge of Sighs)',
+      ermita: 'Puente de los Suspiros con palmeras y la Ermita de Barranco al fondo'
+    };
+
+const s = g.stats;
+---
+<BaseLayout
+  locale={locale}
+  title={g.title}
+  description={g.description}
+  imagePath={PHOTO_HERO}
+  ogImageAlt={g.ogImageAlt}
+  structuredData={[placeSchema, faqSchema, ...(graphSchema ? [graphSchema] : [])]}
+>
+  <section class="relative isolate min-h-[76vh] overflow-hidden bg-[#241a17] text-white">
+    <img src={PHOTO_HERO} alt={alt.hero} class="absolute inset-0 h-full w-full object-cover opacity-60" decoding="async" />
+    <div class="absolute inset-0 bg-gradient-to-r from-[#2d1519]/95 via-[#2d1519]/70 to-transparent"></div>
+    <div class="relative mx-auto flex min-h-[76vh] max-w-7xl items-end px-5 py-16 lg:px-8 lg:py-20">
+      <div class="max-w-3xl">
+        <p class="mb-4 inline-flex rounded-full border border-white/30 bg-black/20 px-4 py-2 text-xs font-bold uppercase tracking-[.2em] backdrop-blur">{g.hero.eyebrow}</p>
+        <h1 class="serif text-5xl font-bold leading-[.98] text-white sm:text-6xl lg:text-7xl">{g.hero.h1}<span class="mt-4 block font-sans text-base font-bold uppercase tracking-[.24em] text-[#f1c365] sm:text-lg">{g.hero.h1Sub}</span></h1>
+        <p class="mt-6 max-w-2xl text-lg text-[#f8ead4] sm:text-xl">{g.hero.lead}</p>
+        <div class="mt-7 flex flex-wrap gap-3">
+          <a href="#visita" class="focus-ring rounded-full bg-[#d89a2b] px-6 py-3 font-bold text-[#2b1d17] no-underline hover:bg-[#efb950]">{g.hero.ctaPrimary}</a>
+          <a href="#historia" class="focus-ring rounded-full border border-white/60 bg-white/10 px-6 py-3 font-bold text-white no-underline backdrop-blur hover:bg-white/20">{g.hero.ctaSecondary}</a>
+        </div>
+        <p class="mt-5 text-xs text-[#e6d8c8]">{g.hero.credit}</p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-label="Presentación del Puente de los Suspiros" class="border-b border-[#d8c8b2] bg-white">
+    <div class="mx-auto max-w-7xl px-5 py-10 lg:px-8">
+      <nav aria-label="Jerarquía del lugar" class="text-xs font-bold uppercase tracking-[.2em] text-[#6e2430]">
+        {g.intro.hierarchy.map((h, i) => (
+          <>{i > 0 && <span aria-hidden="true" class="mx-1.5 text-[#d89a2b]">→</span>}{h}</>
+        ))}
+      </nav>
+      <div class="mt-5 grid gap-8 lg:grid-cols-[1.6fr_1fr]">
+        <p class="max-w-3xl text-lg leading-relaxed text-[#4e4037]" set:html={g.intro.lead}></p>
+        <div class="rounded-2xl border border-[#e2d5c4] bg-[#fffaf1] p-5 text-sm text-[#54463e]">
+          <p class="font-bold uppercase tracking-[.14em] text-[#24574d]">{g.intro.boxTitle}</p>
+          <p class="mt-2" set:html={g.intro.boxText}></p>
+          <a href={mapsShareUrl} target="_blank" rel="noopener noreferrer" class="focus-ring mt-3 inline-block font-bold text-[#6e2430] underline">{g.intro.boxLink}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="border-b border-[#d8c8b2] bg-[#fffaf1]">
+    <div class="mx-auto max-w-7xl px-5 pt-6 lg:px-8">
+      <div class="flex flex-col gap-3 rounded-2xl border border-[#d9b65d] bg-[#fff3c9] p-5 text-[#4a351d] sm:flex-row sm:items-center sm:justify-between">
+        <p><strong>{g.banner.text}</strong></p>
+        <a href={g.banner.link} target="_blank" rel="external noopener noreferrer" class="focus-ring shrink-0 font-bold text-[#6e2430] underline">{g.banner.linkLabel}</a>
+      </div>
+    </div>
+    <div class="mx-auto mt-6 grid max-w-7xl grid-cols-2 gap-px bg-[#d8c8b2] md:grid-cols-4">
+      <div class="bg-[#fffaf1] p-6"><span class="block text-xs font-bold uppercase tracking-[.16em] text-[#6e2430]">{s.ratingLabel}</span><strong class="serif mt-1 block text-3xl text-[#2b1d17]">{s.ratingValue}</strong><small class="text-[#6b5a50]">{s.ratingNote}</small></div>
+      <div class="bg-[#fffaf1] p-6"><span class="block text-xs font-bold uppercase tracking-[.16em] text-[#6e2430]">{s.accessLabel}</span><strong class="serif mt-1 block text-3xl text-[#2b1d17]">{s.accessValue}</strong><small class="text-[#6b5a50]">{s.accessNote}</small></div>
+      <div class="bg-[#fffaf1] p-6"><span class="block text-xs font-bold uppercase tracking-[.16em] text-[#6e2430]">{s.hoursLabel}</span><strong class="serif mt-1 block text-3xl text-[#2b1d17]">{s.hoursValue}</strong><small class="text-[#6b5a50]">{s.hoursNote}</small></div>
+      <div class="bg-[#fffaf1] p-6"><span class="block text-xs font-bold uppercase tracking-[.16em] text-[#6e2430]">{s.contextLabel}</span><strong class="serif mt-1 block text-3xl text-[#2b1d17]">{s.contextValue}</strong><small class="text-[#6b5a50]">{s.contextNote}</small></div>
+    </div>
+  </section>
+
+  <nav aria-label="Índice de la guía" class="border-b border-[#d8c8b2] bg-[#fffaf1]">
+    <div class="no-scrollbar mx-auto flex max-w-7xl items-center gap-2 overflow-x-auto px-5 py-4 lg:px-8">
+      <span class="shrink-0 text-xs font-bold uppercase tracking-[.16em] text-[#6e2430]">{locale === 'en' ? 'In this guide' : 'En esta guía'}</span>
+      {g.toc.map(([id, nombre]) => (
+        <a href={anchorBase + '/#' + id} class="focus-ring shrink-0 rounded-full border border-[#d8c8b2] bg-white px-3.5 py-1.5 text-xs font-semibold text-[#4a3d36] no-underline hover:border-[#6e2430] hover:text-[#6e2430]">{nombre}</a>
+      ))}
+    </div>
+  </nav>
+
+  <section id="historia" class="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+    <div class="grid items-start gap-12 lg:grid-cols-[1.05fr_.95fr]">
+      <div>
+        <p class="text-sm font-bold uppercase tracking-[.18em] text-[#24574d]">{g.history.eyebrow}</p>
+        <h2 class="serif mt-3 text-4xl font-bold leading-tight text-[#48151f] sm:text-5xl">{g.history.h2}</h2>
+        <div class="mt-7 space-y-5 text-lg text-[#4e4037]">
+          {g.history.paras.map((p) => <p>{p}</p>)}
+        </div>
+        <div class="mt-8 rounded-2xl border-l-4 border-[#d89a2b] bg-[#fffaf1] p-6 shadow-sm">
+          <h3 class="serif text-2xl font-bold text-[#48151f]">{g.history.legendTitle}</h3>
+          <p class="mt-2 text-[#56463c]">{g.history.legendText}</p>
+        </div>
+      </div>
+      <figure class="overflow-hidden rounded-[2rem] bg-[#291e19] shadow-2xl shadow-[#473125]/20">
+        <img src={PHOTO_BRIDGE} alt={alt.bridge} class="aspect-[4/5] w-full object-cover" loading="lazy" decoding="async" />
+        <figcaption class="p-4 text-xs text-[#e6d8c8]">Fotografía real: Ivan Brehaut L., Wikimedia Commons, CC BY-SA 4.0.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="cronologia" aria-labelledby="cronologia-titulo" class="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+    <p class="text-sm font-bold uppercase tracking-[.18em] text-[#24574d]">{locale === 'en' ? 'Timeline' : 'Línea de tiempo'}</p>
+    <h2 id="cronologia-titulo" class="serif mt-3 max-w-3xl text-4xl font-bold text-[#48151f] sm:text-5xl">{locale === 'en' ? 'A century and a half of history in dates' : 'Un siglo y medio de historia en fechas'}</h2>
+    <p class="mt-5 max-w-3xl text-lg text-[#594a41]">{locale === 'en' ? 'From its 19th-century inauguration to the 2026 reopening, the bridge concentrates much of Barranco’s urban and heritage history in a few dates.' : 'Desde su inauguración en el siglo XIX hasta la reapertura de 2026, el puente concentra en pocas fechas buena parte de la historia urbana y patrimonial de Barranco.'}</p>
+
+    <ol class="relative mx-auto mt-12 max-w-3xl space-y-8 before:absolute before:left-[22px] before:top-3 before:bottom-3 before:w-px before:bg-[#d8c8b2]">
+      {g.timeline.map((hito) => (
+        <li class="relative pl-16">
+          <span class="absolute left-0 top-0 flex h-11 w-11 items-center justify-center rounded-full border-2 border-[#6e2430] bg-[#fffaf1] text-sm font-bold text-[#6e2430] shadow-sm">{hito.year}</span>
+          <div class="rounded-2xl border border-[#d8c8b2] bg-[#fffaf1] p-5">
+            <p class="text-xs font-bold uppercase tracking-[.16em] text-[#d89a2b]">{hito.etiqueta}</p>
+            <p class="mt-2 text-[#4e4037]">{hito.texto}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+    <p class="mx-auto mt-6 max-w-3xl text-xs text-[#6b5a50]">{locale === 'en' ? 'Sources: District Municipality of Barranco (record and “History of Barranco”), PROMPERÚ, MINCETUR and Andina.' : 'Fuentes: Municipalidad Distrital de Barranco (ficha y «Historia de Barranco»), PROMPERÚ, MINCETUR y Andina.'}</p>
+  </section>
+
+  <section id="historias" aria-labelledby="historias-titulo" class="bg-[#fffaf1] py-20">
+    <div class="mx-auto max-w-7xl px-5 lg:px-8">
+      <p class="text-sm font-bold uppercase tracking-[.18em] text-[#24574d]">{locale === 'en' ? 'Stories and legends' : 'Historias y leyendas'}</p>
+      <h2 id="historias-titulo" class="serif mt-3 max-w-3xl text-4xl font-bold text-[#48151f] sm:text-5xl">{locale === 'en' ? 'Legends, music and Barranco’s memory' : 'Leyendas, música y memoria de Barranco'}</h2>
+      <p class="mt-5 max-w-3xl text-lg text-[#594a41]">{locale === 'en' ? 'The bridge’s value is not only architectural: its history intertwines with music, the seaside resort, artists and the traditions that gave the neighborhood its character.' : 'El valor del puente no es solo arquitectónico: su historia se entrelaza con la música, el balneario, los artistas y las tradiciones que dieron carácter al barrio.'}</p>
+      <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {g.historias.map((h) => (
+          <article class="flex flex-col rounded-3xl border border-[#d8c8b2] bg-white p-6 shadow-sm">
+            <span class={'self-start rounded-full px-3 py-1 text-[.68rem] font-bold uppercase tracking-[.12em] ' + h.color}>{h.kind}</span>
+            <h3 class="serif mt-4 text-2xl font-bold text-[#48151f]">{h.titulo}</h3>
+            <p class="mt-2 flex-1 text-[.95rem] text-[#5e4e45]">{h.texto}</p>
+          </article>
+        ))}
+      </div>
+      <p class="mt-8 text-sm text-[#6b5b51]"><strong>{locale === 'en' ? 'Note:' : 'Nota:'}</strong> {locale === 'en' ? 'The legends and versions of local imagination are presented as such, separate from the historical facts documented in the official sources cited.' : 'las leyendas y versiones del imaginario local se presentan como tales, separadas de los hechos documentados en las fuentes oficiales citadas.'}</p>
+    </div>
+  </section>
+
+  <section id="visita" class="bg-[#24574d] text-white">
+    <div class="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+      <p class="text-sm font-bold uppercase tracking-[.18em] text-[#f1c365]">{g.visita.eyebrow}</p>
+      <h2 class="serif mt-3 max-w-3xl text-4xl font-bold sm:text-5xl">{g.visita.h2}</h2>
+      <div class="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        {g.visita.cards.map((c) => (
+          <article class="rounded-3xl bg-white/10 p-6 ring-1 ring-white/20"><span class="text-3xl">{c.icon}</span><h3 class="serif mt-3 text-2xl font-bold">{c.title}</h3><p class="mt-2 text-[#e7f0ed]">{c.text}</p></article>
+        ))}
+      </div>
+      <p class="mt-7 text-sm text-[#d5e5df]"><strong>{locale === 'en' ? 'Hours:' : 'Horarios:'}</strong> {g.visita.note}</p>
+    </div>
+  </section>
+
+  <Facilities locale={locale} />
+
+  <section id="como-llegar" class="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+    <div class="grid gap-12 lg:grid-cols-[.9fr_1.1fr]">
+      <div>
+        <p class="text-sm font-bold uppercase tracking-[.18em] text-[#24574d]">{g.comoLlegar.eyebrow}</p>
+        <h2 class="serif mt-3 text-4xl font-bold text-[#48151f] sm:text-5xl">{g.comoLlegar.h2}</h2>
+        <div class="mt-8 space-y-4">
+          {g.comoLlegar.items.map((it) => (
+            <div class="rounded-2xl border border-[#d8c8b2] bg-[#fffaf1] p-6"><h3 class="font-bold text-[#48151f]">{it.title}</h3><p class="mt-2 text-[#54463e]">{it.text}</p></div>
+          ))}
+        </div>
+      </div>
+      <MapEmbed locale={locale} />
+    </div>
+  </section>
+
+  <Weather locale={locale} />
+
+  <SeasonalStrategy locale={locale} />
+
+  <Environment locale={locale} />
+
+  <section id="alrededores" class="bg-[#fffaf1] py-20">
+    <div class="mx-auto max-w-7xl px-5 lg:px-8">
+      <div class="grid gap-10 lg:grid-cols-2">
+        <div>
+          <p class="text-sm font-bold uppercase tracking-[.18em] text-[#24574d]">{g.alrededores.eyebrow}</p>
+          <h2 class="serif mt-3 text-4xl font-bold text-[#48151f] sm:text-5xl">{g.alrededores.h2}</h2>
+          <p class="mt-5 max-w-2xl text-lg text-[#594a41]">{g.alrededores.lead}</p>
+        </div>
+        <figure class="overflow-hidden rounded-[2rem] bg-[#291e19]"><img src={PHOTO_BAJADA} alt={alt.bajada} class="aspect-[16/10] w-full object-cover" loading="lazy" decoding="async" /><figcaption class="p-4 text-xs text-[#e6d8c8]">Fotografía real: Nina Zaitceva, Wikimedia Commons, CC BY-SA 4.0.</figcaption></figure>
+      </div>
+      <div class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        {g.alrededores.cards.map((c) => (
+          <article class="rounded-3xl border border-[#d8c8b2] p-6"><h3 class="serif text-2xl font-bold text-[#48151f]">{c.title}</h3><p class="mt-2 text-[#5c4d44]">{c.text}</p></article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section id="gastronomia" aria-labelledby="gastronomia-titulo" class="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+    <div class="grid items-center gap-12 lg:grid-cols-2">
+      <figure class="overflow-hidden rounded-[2rem] bg-[#291e19] shadow-xl"><img src={PHOTO_ERMITA} alt={alt.ermita} class="aspect-square w-full object-cover" loading="lazy" decoding="async" /><figcaption class="p-4 text-xs text-[#e6d8c8]">Fotografía real: Herwarth Morales, Wikimedia Commons, CC BY-SA 4.0.</figcaption></figure>
+      <div>
+        <p class="text-sm font-bold uppercase tracking-[.18em] text-[#24574d]">{g.gastronomia.eyebrow}</p>
+        <h2 class="serif mt-3 text-4xl font-bold text-[#48151f] sm:text-5xl">{g.gastronomia.h2}</h2>
+        <p class="mt-5 text-lg text-[#594a41]">{g.gastronomia.lead}</p>
+        <div class="mt-7 grid grid-cols-2 gap-3 text-sm font-semibold text-[#4d4039] sm:grid-cols-3">
+          {g.gastronomia.tags.map((tag) => (
+            <span class="rounded-full border border-[#d8c8b2] bg-[#fffaf1] px-4 py-3 text-center">{tag}</span>
+          ))}
+        </div>
+        <p class="mt-5 text-sm text-[#6b5b51]">{g.gastronomia.note}</p>
+      </div>
+    </div>
+  </section>
+
+  <Itineraries locale={locale} />
+
+  <Responsibility locale={locale} />
+
+  <section id="fuentes" aria-labelledby="fuentes-titulo" class="bg-[#6e2430] py-16 text-white">
+    <div class="mx-auto max-w-7xl px-5 lg:px-8">
+      <p class="text-sm font-bold uppercase tracking-[.18em] text-[#f1c365]">{g.fuentes.eyebrow}</p>
+      <h2 class="serif mt-3 max-w-4xl text-4xl font-bold">{g.fuentes.h2}</h2>
+      <p class="mt-4 max-w-3xl text-[#f1dfe2]">{g.fuentes.lead}</p>
+      <div class="mt-8 grid gap-4 md:grid-cols-2">
+        {g.fuentes.links.map((lk) => (
+          <a href={lk.href} target="_blank" rel="external noopener noreferrer" class="focus-ring rounded-2xl border border-white/25 bg-white/10 p-5 no-underline hover:bg-white/15"><strong class="block">{lk.title}</strong><span class="mt-1 block text-sm text-[#f1dfe2]">{lk.text}</span></a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section id="preguntas" class="mx-auto max-w-5xl px-5 py-20 lg:px-8">
+    <p class="text-center text-sm font-bold uppercase tracking-[.18em] text-[#24574d]">{locale === 'en' ? 'Before you go' : 'Antes de ir'}</p>
+    <h2 class="serif mt-3 text-center text-4xl font-bold text-[#48151f] sm:text-5xl">{locale === 'en' ? 'Frequently asked questions' : 'Preguntas frecuentes'}</h2>
+    <div class="mt-10 divide-y divide-[#d8c8b2] rounded-3xl border border-[#d8c8b2] bg-[#fffaf1] px-6 sm:px-8">
+      {faq.map((item) => (
+        <details class="group py-5">
+          <summary class="focus-ring cursor-pointer list-none pr-8 font-bold text-[#3b2d27] marker:hidden">{item.q}<span class="float-right text-[#6e2430] group-open:rotate-45">+</span></summary>
+          <p class="mt-3 max-w-3xl text-[#5e4e45]" set:html={item.a}></p>
+        </details>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

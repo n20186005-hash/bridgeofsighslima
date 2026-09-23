@@ -2,62 +2,54 @@
 // Servicios y comodidades en el entorno del Puente de los Suspiros.
 // Proyecto sin fines de lucro: solo categorías de servicios, sin marcas
 // ni recomendaciones comerciales.
-const facilities = [
-  {
-    numero: '01',
-    titulo: 'Baños públicos (WC)',
-    texto: 'Junto al puente no hay un baño público permanente y gratuito. En el circuito histórico la opción habitual es consumir algo en un café o restaurante que ofrezca sus baños a clientes; algunos espacios culturales y puntos de gran afluencia también cuentan con servicios de pago.',
-    busqueda: 'baños públicos · servicios higiénicos'
-  },
-  {
-    numero: '02',
-    titulo: 'Estacionamiento',
-    texto: 'El puente no tiene estacionamiento propio y su entorno inmediato es de calles angostas y de uso peatonal. Quien llegue en auto suele usar playas de estacionamiento privadas o espacios autorizados en las avenidas del distrito y caminar el último tramo. Respeta siempre la señalización y las zonas restringidas.',
-    busqueda: 'playa de estacionamiento · parqueo'
-  },
-  {
-    numero: '03',
-    titulo: 'Restaurantes y cafeterías',
-    texto: 'La Bajada de Baños y las calles del centro histórico concentran cafeterías, tabernas, restaurantes de cocina peruana y marisquerías. Los precios, horarios y formas de pago varían según el local: revisa la carta o el menú visible antes de pedir.',
-    busqueda: 'cafetería · restaurante en Barranco'
-  },
-  {
-    numero: '04',
-    titulo: 'Alojamiento',
-    texto: 'Barranco ofrece hoteles boutique, hostales y casas de huéspedes, muchas instaladas en casonas restauradas. Reserva con antelación en temporada alta, feriados y fines de semana; si buscas más opciones económicas, los distritos vecinos amplían la oferta.',
-    busqueda: 'hoteles y hostales en Barranco'
-  },
-  {
-    numero: '05',
-    titulo: 'Mercados y tiendas',
-    texto: 'En el casco histórico abundan tiendas de conveniencia, bodegas, panaderías y galerías de arte y artesanía. Los supermercados de mayor tamaño y los mercados tradicionales están en las avenidas principales próximas al distrito, fuera del circuito peatonal del puente.',
-    busqueda: 'tienda de conveniencia · mercado'
-  },
-  {
-    numero: '06',
-    titulo: 'Combustible y carga eléctrica',
-    texto: 'No hay estaciones de servicio dentro del casco histórico. Las gasolineras y los puntos de carga para vehículos eléctricos se ubican en las avenidas de acceso a Barranco; conviene cargar combustible antes de llegar al área peatonal.',
-    busqueda: 'estación de servicio · cargador eléctrico'
-  },
-  {
-    numero: '07',
-    titulo: 'Cajeros y efectivo',
-    texto: 'Hay cajeros automáticos en agencias bancarias y zonas comerciales del distrito, sobre todo alrededor de su avenida principal. Algunos negocios del centro histórico operan con efectivo, por lo que es recomendable llevar algo de moneda local.',
-    busqueda: 'cajero automático'
-  },
-  {
-    numero: '08',
-    titulo: 'Farmacias y salud',
-    texto: 'Las farmacias de cadena están presentes en las avenidas principales del distrito y en los accesos cercanos. Para urgencias menores existen centros de salud públicos; las emergencias mayores se atienden en hospitales de Lima Metropolitana.',
-    busqueda: 'farmacia · centro de salud'
-  }
+import type { Locale } from '../i18n';
+
+const { locale = 'es' as Locale } = Astro.props;
+
+const facilitiesEs = [
+  { numero: '01', titulo: 'Baños públicos (WC)', texto: 'Junto al puente no hay un baño público permanente y gratuito. En el circuito histórico la opción habitual es consumir algo en un café o restaurante que ofrezca sus baños a clientes; algunos espacios culturales y puntos de gran afluencia también cuentan con servicios de pago.', busqueda: 'baños públicos · servicios higiénicos' },
+  { numero: '02', titulo: 'Estacionamiento', texto: 'El puente no tiene estacionamiento propio y su entorno inmediato es de calles angostas y de uso peatonal. Quien llegue en auto suele usar playas de estacionamiento privadas o espacios autorizados en las avenidas del distrito y caminar el último tramo. Respeta siempre la señalización y las zonas restringidas.', busqueda: 'playa de estacionamiento · parqueo' },
+  { numero: '03', titulo: 'Restaurantes y cafeterías', texto: 'La Bajada de Baños y las calles del centro histórico concentran cafeterías, tabernas, restaurantes de cocina peruana y marisquerías. Los precios, horarios y formas de pago varían según el local: revisa la carta o el menú visible antes de pedir.', busqueda: 'cafetería · restaurante en Barranco' },
+  { numero: '04', titulo: 'Alojamiento', texto: 'Barranco ofrece hoteles boutique, hostales y casas de huéspedes, muchas instaladas en casonas restauradas. Reserva con antelación en temporada alta, feriados y fines de semana; si buscas más opciones económicas, los distritos vecinos amplían la oferta.', busqueda: 'hoteles y hostales en Barranco' },
+  { numero: '05', titulo: 'Mercados y tiendas', texto: 'En el casco histórico abundan tiendas de conveniencia, bodegas, panaderías y galerías de arte y artesanía. Los supermercados de mayor tamaño y los mercados tradicionales están en las avenidas principales próximas al distrito, fuera del circuito peatonal del puente.', busqueda: 'tienda de conveniencia · mercado' },
+  { numero: '06', titulo: 'Combustible y carga eléctrica', texto: 'No hay estaciones de servicio dentro del casco histórico. Las gasolineras y los puntos de carga para vehículos eléctricos se ubican en las avenidas de acceso a Barranco; conviene cargar combustible antes de llegar al área peatonal.', busqueda: 'estación de servicio · cargador eléctrico' },
+  { numero: '07', titulo: 'Cajeros y efectivo', texto: 'Hay cajeros automáticos en agencias bancarias y zonas comerciales del distrito, sobre todo alrededor de su avenida principal. Algunos negocios del centro histórico operan con efectivo, por lo que es recomendable llevar algo de moneda local.', busqueda: 'cajero automático' },
+  { numero: '08', titulo: 'Farmacias y salud', texto: 'Las farmacias de cadena están presentes en las avenidas principales del distrito y en los accesos cercanos. Para urgencias menores existen centros de salud públicos; las emergencias mayores se atienden en hospitales de Lima Metropolitana.', busqueda: 'farmacia · centro de salud' }
 ];
+const facilitiesEn = [
+  { numero: '01', titulo: 'Public restrooms (WC)', texto: 'There is no permanent, free public restroom right next to the bridge. In the historic circuit the usual option is to have something at a café or restaurant that offers its restrooms to customers; some cultural venues and high-traffic points also have paid facilities.', busqueda: 'public restrooms · toilets' },
+  { numero: '02', titulo: 'Parking', texto: 'The bridge has no parking of its own and its immediate surroundings are narrow, pedestrian-use streets. Those arriving by car usually use private parking lots or authorized spaces on the district’s avenues and walk the last stretch. Always respect signage and restricted zones.', busqueda: 'parking lot · car park' },
+  { numero: '03', titulo: 'Restaurants and cafés', texto: 'The Bajada de Baños and the streets of the historic center concentrate cafés, taverns, Peruvian-cuisine restaurants and cevicherias. Prices, hours and payment methods vary by place: check the visible menu or card before ordering.', busqueda: 'café · restaurant in Barranco' },
+  { numero: '04', titulo: 'Lodging', texto: 'Barranco offers boutique hotels, hostels and guesthouses, many set in restored old mansions. Book in advance in high season, holidays and weekends; if you seek more economical options, neighboring districts broaden the offer.', busqueda: 'hotels and hostels in Barranco' },
+  { numero: '05', titulo: 'Markets and shops', texto: 'The historic center abounds with convenience stores, groceries, bakeries and art and craft galleries. Larger supermarkets and traditional markets are on the main avenues near the district, outside the bridge’s pedestrian circuit.', busqueda: 'convenience store · market' },
+  { numero: '06', titulo: 'Fuel and EV charging', texto: 'There are no service stations within the historic center. Gas stations and EV charging points are on the avenues leading into Barranco; it is best to fuel up before reaching the pedestrian area.', busqueda: 'gas station · EV charger' },
+  { numero: '07', titulo: 'ATMs and cash', texto: 'There are ATMs at bank branches and commercial areas of the district, especially around its main avenue. Some historic-center businesses operate with cash, so it is advisable to carry some local currency.', busqueda: 'ATM' },
+  { numero: '08', titulo: 'Pharmacies and health', texto: 'Chain pharmacies are present on the district’s main avenues and nearby accesses. For minor emergencies there are public health centers; major emergencies are treated at Metropolitan Lima hospitals.', busqueda: 'pharmacy · health center' }
+];
+
+const facilities = locale === 'en' ? facilitiesEn : facilitiesEs;
+
+const t = locale === 'en'
+  ? {
+      eyebrow: 'Services and amenities',
+      h2: 'How to sort out basic services near the bridge',
+      intro: 'The bridge sits within a pedestrian historic center, so some services are not at your doorstep. This guide lists <strong>categories</strong> of services and where they are usually found in Barranco, without promoting any establishment or receiving payments from businesses.',
+      locate: 'How to locate by type: ',
+      neutral: 'Neutrality note: this site is an independent, non-profit project. It does not mention or recommend specific brands or businesses: it only indicates service categories. Verify availability, hours, access and conditions at the time of your visit.'
+    }
+  : {
+      eyebrow: 'Servicios y comodidades',
+      h2: 'Cómo resolver servicios básicos cerca del puente',
+      intro: 'El puente está dentro de un casco histórico peatonal, así que algunos servicios no están a su puerta. Esta guía enumera <strong>categorías</strong> de servicios y dónde suelen encontrarse en Barranco, sin promover ningún establecimiento ni recibir pagos de comercios.',
+      locate: 'Cómo ubicar por tipo: ',
+      neutral: 'Nota de neutralidad: este sitio es un proyecto independiente y sin fines de lucro. No menciona ni recomienda marcas ni comercios específicos: solo indica categorías de servicios. Verifica disponibilidad, horarios, accesos y condiciones en el momento de tu visita.'
+    };
 ---
 <section id="servicios" aria-labelledby="servicios-titulo" class="bg-[#fffaf1] py-20">
   <div class="mx-auto max-w-7xl px-5 lg:px-8">
-    <p class="text-sm font-bold uppercase tracking-[.18em] text-[#24574d]">Servicios y comodidades</p>
-    <h2 id="servicios-titulo" class="serif mt-3 max-w-3xl text-4xl font-bold text-[#48151f] sm:text-5xl">Cómo resolver servicios básicos cerca del puente</h2>
-    <p class="mt-5 max-w-3xl text-lg text-[#594a41]">El puente está dentro de un casco histórico peatonal, así que algunos servicios no están a su puerta. Esta guía enumera <strong>categorías</strong> de servicios y dónde suelen encontrarse en Barranco, sin promover ningún establecimiento ni recibir pagos de comercios.</p>
+    <p class="text-sm font-bold uppercase tracking-[.18em] text-[#24574d]">{t.eyebrow}</p>
+    <h2 id="servicios-titulo" class="serif mt-3 max-w-3xl text-4xl font-bold text-[#48151f] sm:text-5xl">{t.h2}</h2>
+    <p class="mt-5 max-w-3xl text-lg text-[#594a41]" set:html={t.intro}></p>
 
     <div class="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
       {facilities.map((f) => (
@@ -69,14 +61,12 @@ const facilities = [
           <h3 class="serif mt-4 text-xl font-bold text-[#48151f]">{f.titulo}</h3>
           <p class="mt-2 flex-1 text-[.95rem] text-[#5e4e45]">{f.texto}</p>
           <p class="mt-5 border-t border-[#e5d9c8] pt-3 text-xs text-[#6b5a50]">
-            <span class="font-bold uppercase tracking-[.1em] text-[#6e2430]">Cómo ubicar por tipo: </span>{f.busqueda}
+            <span class="font-bold uppercase tracking-[.1em] text-[#6e2430]">{t.locate}</span>{f.busqueda}
           </p>
         </article>
       ))}
     </div>
 
-    <p class="mt-8 max-w-4xl rounded-2xl border border-[#d9b65d] bg-[#fff3c9] p-5 text-sm text-[#4a351d]">
-      <strong>Nota de neutralidad:</strong> este sitio es un proyecto independiente y sin fines de lucro. No menciona ni recomienda marcas ni comercios específicos: solo indica categorías de servicios. Verifica disponibilidad, horarios, accesos y condiciones en el momento de tu visita.
-    </p>
+    <p class="mt-8 max-w-4xl rounded-2xl border border-[#d9b65d] bg-[#fff3c9] p-5 text-sm text-[#4a351d]" set:html={t.neutral}></p>
   </div>
 </section>

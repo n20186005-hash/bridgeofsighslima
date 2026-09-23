@@ -1,0 +1,46 @@
+---
+// Divulgación y responsabilidad del visitante en el Puente de los Suspiros.
+// Sin recomendaciones comerciales; enfoque patrimonial, ambiental y de seguridad.
+import type { Locale } from '../i18n';
+
+const { locale = 'es' as Locale } = Astro.props;
+
+const itemsEs = [
+  { icon: '🏛️', title: 'Respeto al patrimonio', text: 'El puente y su entorno forman parte de la Zona Monumental de Barranco, declarada Monumento Nacional. No escribas ni pegues nada sobre la madera ni los muros, no trepes las barandas y no claves objetos: es patrimonio de todos.' },
+  { icon: '🗑️', title: 'Basura cero', text: 'Lleva contigo tus residuos hasta encontrar un punto de reciclaje o basura. El casco histórico es un barrio residencial; mantenerlo limpio es responsabilidad de quien lo visita.' },
+  { icon: '🤝', title: 'Convivencia con el barrio', text: 'Barranco es distrito habitado, con vecinos, locales y vida nocturna bohemia. Modera el ruido, respeta las viviendas y las zonas privadas, y disfruta del ambiente sin perturbar a quienes viven allí.' },
+  { icon: '⚠️', title: 'Seguridad en la quebrada', text: 'La Bajada de Baños tiene desniveles, escalones y, con la garúa, superficies resbaladizas. Usa calzado cerrado y antideslizante, no te asomes a bordes sin protección y vigila a los menores cerca de la quebrada.' },
+  { icon: '🐱', title: 'Fauna y entorno', text: 'Gatos, aves marinas y lagartijas son parte del paisaje. No los alimentes ni persigas, y no dejes comida a la vista: así proteges tanto a los animales como al equilibrio del lugar.' },
+  { icon: '✅', title: 'Verifica lo esencial', text: 'Horarios, accesos, obras y restricciones pueden cambiar. Antes de desplazarte, contrasta la información en las fuentes oficiales de la Municipalidad de Barranco, MINCETUR o PROMPERÚ citadas en esta guía.' }
+];
+const itemsEn = [
+  { icon: '🏛️', title: 'Respect for heritage', text: 'The bridge and its surroundings are part of Barranco’s Monument Zone, declared a National Monument. Do not write or stick anything on the wood or the walls, do not climb the railings and do not drive objects into them: it is heritage for everyone.' },
+  { icon: '🗑️', title: 'Zero waste', text: 'Carry your waste with you until you find a recycling or trash point. The historic center is a residential neighborhood; keeping it clean is the responsibility of whoever visits it.' },
+  { icon: '🤝', title: 'Coexistence with the neighborhood', text: 'Barranco is an inhabited district, with neighbors, businesses and bohemian nightlife. Moderate noise, respect homes and private areas, and enjoy the atmosphere without disturbing those who live there.' },
+  { icon: '⚠️', title: 'Safety in the ravine', text: 'The Bajada de Baños has slopes, steps and, with the garúa, slippery surfaces. Wear closed, non-slip footwear, do not lean over unprotected edges and watch minors near the ravine.' },
+  { icon: '🐱', title: 'Wildlife and environment', text: 'Cats, seabirds and lizards are part of the landscape. Do not feed or chase them, and do not leave food in sight: this protects both the animals and the balance of the place.' },
+  { icon: '✅', title: 'Verify the essentials', text: 'Hours, access, works and restrictions may change. Before traveling, cross-check the information with the official sources of the Municipality of Barranco, MINCETUR or PROMPERÚ cited in this guide.' }
+];
+const items = locale === 'en' ? itemsEn : itemsEs;
+
+const t = locale === 'en'
+  ? { eyebrow: 'Outreach and care', h2: 'Science, history and visitor responsibility', intro: 'Knowing the place also means caring for it. This independent guide gathers historical and natural context so that the visit is informed and respectful of the heritage, the environment and the community of Barranco.', note: 'The tips are indicative. The bridge is managed as a public space; the competent authority may establish additional rules at any time.' }
+  : { eyebrow: 'Divulgación y cuidado', h2: 'Ciencia, historia y responsabilidad del visitante', intro: 'Conocer el lugar también implica cuidarlo. Esta guía independiente reúne contexto histórico y natural para que la visita sea informada y respetuosa con el patrimonio, el entorno y la comunidad de Barranco.', note: 'Los consejos son orientativos. El puente se gestiona como espacio público; la autoridad competente puede establecer normas adicionales en cada momento.' };
+---
+<section id="responsabilidad" aria-labelledby="responsabilidad-titulo" class="mx-auto max-w-7xl px-5 py-20 lg:px-8">
+  <p class="text-sm font-bold uppercase tracking-[.18em] text-[#24574d]">{t.eyebrow}</p>
+  <h2 id="responsabilidad-titulo" class="serif mt-3 max-w-4xl text-4xl font-bold text-[#48151f] sm:text-5xl">{t.h2}</h2>
+  <p class="mt-5 max-w-3xl text-lg text-[#594a41]">{t.intro}</p>
+
+  <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    {items.map((it) => (
+      <article class="rounded-3xl border border-[#d8c8b2] bg-[#fffaf1] p-6">
+        <span class="text-3xl">{it.icon}</span>
+        <h3 class="serif mt-3 text-xl font-bold text-[#48151f]">{it.title}</h3>
+        <p class="mt-2 text-[#5e4e45]">{it.text}</p>
+      </article>
+    ))}
+  </div>
+
+  <p class="mt-8 text-sm text-[#6b5b51]">{t.note}</p>
+</section>

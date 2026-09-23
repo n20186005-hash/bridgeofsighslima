@@ -1,5 +1,37 @@
+# Dependencias
 node_modules/
+.pnp/
+.pnp.js
+
+# Salida de build
 dist/
 .astro/
+
+# Cloudflare Workers
 .wrangler/
+.dev.vars
+.dev.vars.*
+wrangler.toml
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Editor y SO
 .DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swo
+
+# Caché de herramientas
+.eslintcache
+.cache/

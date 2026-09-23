@@ -1,0 +1,122 @@
+---
+// Estrategia de visita por temporada para el Puente de los Suspiros (Barranco, Lima).
+// Basada en el clima costero de Lima documentado por el SENAMHI; sin fuentes externas
+// no aplicables al Perú (se evita citar agencias de otros países).
+import type { Locale } from '../i18n';
+
+const { locale = 'es' as Locale } = Astro.props;
+
+const seasonsEs = [
+  { name: 'Verano', months: 'Diciembre – marzo', weather: 'Sol, calor húmedo y cielos despejados. Las tardes en la costa suelen superar los 25–28 °C, con brisa marina por la tarde.', ideal: 'La mejor luz para fotografía, atardeceres dorados y recorridos al aire libre sin frío.', bring: 'Protector solar, gorra o sombrero, agua, ropa ligera y calzado cómodo.', crowd: 'Alta (vacaciones de verano y feriados).' },
+  { name: 'Otoño', months: 'Abril – mayo', weather: 'Transición: el sol cede y aparecen las primeras nieblas costeras. Temperaturas suaves, entre 18 y 23 °C.', ideal: 'Caminatas tranquilas y luz difusa, muy agradable para retratos y para comer al aire libre.', bring: 'Una chaqueta ligera; las mañanas y noches pueden sentirse frescas.', crowd: 'Media.' },
+  { name: 'Invierno / Garúa', months: 'Junio – octubre', weather: 'Cielos grises, niebla costera (garúa) y humedad alta. Casi no llueve; las temperaturas rondan los 14–19 °C.', ideal: 'Paseos sin calor, menos gente y el ambiente bohemio y brumoso que caracteriza al barrio.', bring: 'Chaqueta o chalina, calzado cerrado y antideslizante para los desniveles húmedos.', crowd: 'Baja.' },
+  { name: 'Primavera', months: 'Noviembre', weather: 'La garúa retrocede y el sol regresa. Clima variable pero agradable, con mañanas frescas y tardes templadas.', ideal: 'Buen equilibrio entre luz y afluencia moderada antes del arranque del verano.', bring: 'Ropa por capas: mañana fresca y tarde más cálida.', crowd: 'Media.' }
+];
+const seasonsEn = [
+  { name: 'Summer', months: 'December – March', weather: 'Sun, humid heat and clear skies. Coastal afternoons often exceed 25–28 °C, with a sea breeze in the afternoon.', ideal: 'The best light for photography, golden sunsets and outdoor walks without the cold.', bring: 'Sunscreen, cap or hat, water, light clothing and comfortable shoes.', crowd: 'High (summer holidays and festivities).' },
+  { name: 'Autumn', months: 'April – May', weather: 'Transition: the sun yields and the first coastal fogs appear. Mild temperatures, between 18 and 23 °C.', ideal: 'Quiet walks and diffuse light, very pleasant for portraits and eating outdoors.', bring: 'A light jacket; mornings and nights can feel cool.', crowd: 'Medium.' },
+  { name: 'Winter / Coastal fog', months: 'June – October', weather: 'Grey skies, coastal fog (garúa) and high humidity. It hardly rains; temperatures hover around 14–19 °C.', ideal: 'Walks without heat, fewer people and the misty, bohemian atmosphere that characterizes the neighborhood.', bring: 'Jacket or scarf, closed and non-slip footwear for damp slopes.', crowd: 'Low.' },
+  { name: 'Spring', months: 'November', weather: 'The garúa recedes and the sun returns. Variable but pleasant climate, with cool mornings and temperate afternoons.', ideal: 'Good balance between light and moderate crowds before summer starts.', bring: 'Layers: cool morning and warmer afternoon.', crowd: 'Medium.' }
+];
+const seasons = locale === 'en' ? seasonsEn : seasonsEs;
+
+const monthlyEs = [
+  ['Ene', 'Sol · calor'], ['Feb', 'Sol · calor'], ['Mar', 'Sol · calor'],
+  ['Abr', 'Transición'], ['May', 'Garúa'], ['Jun', 'Garúa · fresco'],
+  ['Jul', 'Garúa · fresco'], ['Ago', 'Garúa · fresco'], ['Sep', 'Garúa'],
+  ['Oct', 'Garúa · retoma sol'], ['Nov', 'Transición · sol'], ['Dic', 'Sol · calor']
+];
+const monthlyEn = [
+  ['Jan', 'Sun · heat'], ['Feb', 'Sun · heat'], ['Mar', 'Sun · heat'],
+  ['Apr', 'Transition'], ['May', 'Fog'], ['Jun', 'Fog · cool'],
+  ['Jul', 'Fog · cool'], ['Aug', 'Fog · cool'], ['Sep', 'Fog'],
+  ['Oct', 'Fog · sun returns'], ['Nov', 'Transition · sun'], ['Dec', 'Sun · heat']
+];
+const monthly = locale === 'en' ? monthlyEn : monthlyEs;
+
+const t = locale === 'en'
+  ? {
+      eyebrow: 'When to visit',
+      h2: 'Season-by-season visit strategy',
+      intro: 'Lima is a desert-coast city: it essentially has two faces, the sunny summer and the misty winter. This guide summarizes what to expect each season to help you plan the trip to the Bridge of Sighs and the Bajada de Baños.',
+      headers: ['Season', 'Months', 'Climate & sea', 'Ideal for', 'What to bring', 'Crowds'],
+      c1t: 'Best light & photos', c1b: 'Summer (Dec–Mar): clear skies and golden sunsets over the ravine and the bridge.',
+      c2t: 'Fewer people', c2b: 'Winter (Jun–Oct): garúa and misty weather, but with the advantage of far fewer people.',
+      c3t: 'In short', c3b: 'The bridge is visited year-round; choose summer for the light and winter for the calm. Always check the forecast before leaving.',
+      quick: 'Quick monthly view'
+    }
+  : {
+      eyebrow: 'Cuándo visitar',
+      h2: 'Estrategia de visita por temporada',
+      intro: 'Lima es ciudad de costa desértica: tiene esencialmente dos caras, el verano soleado y el invierno brumoso. Esta guía resume qué esperar en cada temporada para ayudarte a planear el viaje al Puente de los Suspiros y a la Bajada de Baños.',
+      headers: ['Temporada', 'Meses', 'Clima y mar', 'Ideal para', 'Qué llevar', 'Afluencia'],
+      c1t: 'Mejor luz y fotos', c1b: 'Verano (dic–mar): cielos despejados y atardeceres dorados sobre la quebrada y el puente.',
+      c2t: 'Menos gente', c2b: 'Invierno (jun–oct): garúa y clima brumoso, pero con la ventaja de una afluencia mucho menor.',
+      c3t: 'En resumen', c3b: 'El puente se visita todo el año; elige verano para la luz y el invierno para la tranquilidad. Revisa siempre la previsión antes de salir.',
+      quick: 'Vista mensual rápida'
+    };
+---
+<section id="temporada" aria-labelledby="temporada-titulo" class="bg-[#fffaf1] py-20">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <p class="text-sm font-bold uppercase tracking-[.18em] text-[#24574d]">{t.eyebrow}</p>
+    <h2 id="temporada-titulo" class="serif mt-3 max-w-4xl text-4xl font-bold text-[#48151f] sm:text-5xl">{t.h2}</h2>
+    <p class="mt-5 max-w-3xl text-lg text-[#594a41]">{t.intro}</p>
+
+    <div class="mt-10 overflow-x-auto rounded-3xl border border-[#d8c8b2] bg-white shadow-sm">
+      <table class="w-full min-w-[760px] border-collapse text-left text-sm">
+        <thead class="bg-[#6e2430] text-white">
+          <tr>
+            {t.headers.map((h) => (
+              <th class="px-5 py-4 font-bold uppercase tracking-[.08em]">{h}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {seasons.map((s, i) => (
+            <tr class={i % 2 ? 'bg-[#fffaf1]' : 'bg-white'}>
+              <td class="border-t border-[#e5d9c8] px-5 py-4 align-top"><span class="serif text-lg font-bold text-[#6e2430]">{s.name}</span></td>
+              <td class="border-t border-[#e5d9c8] px-5 py-4 align-top text-[#54463e]">{s.months}</td>
+              <td class="border-t border-[#e5d9c8] px-5 py-4 align-top text-[#54463e]">{s.weather}</td>
+              <td class="border-t border-[#e5d9c8] px-5 py-4 align-top text-[#54463e]">{s.ideal}</td>
+              <td class="border-t border-[#e5d9c8] px-5 py-4 align-top text-[#54463e]">{s.bring}</td>
+              <td class="border-t border-[#e5d9c8] px-5 py-4 align-top text-[#54463e]">{s.crowd}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-6 grid gap-4 md:grid-cols-3">
+      <div class="rounded-2xl border border-[#d9b65d] bg-[#fff3c9] p-5">
+        <p class="font-bold uppercase tracking-[.12em] text-[#7a5311]">{t.c1t}</p>
+        <p class="mt-2 text-sm text-[#4a351d]">{t.c1b}</p>
+      </div>
+      <div class="rounded-2xl border border-[#9cc3b4] bg-[#eef6f2] p-5">
+        <p class="font-bold uppercase tracking-[.12em] text-[#24574d]">{t.c2t}</p>
+        <p class="mt-2 text-sm text-[#2f5247]">{t.c2b}</p>
+      </div>
+      <div class="rounded-2xl border border-[#d8c8b2] bg-white p-5">
+        <p class="font-bold uppercase tracking-[.12em] text-[#6e2430]">{t.c3t}</p>
+        <p class="mt-2 text-sm text-[#54463e]">{t.c3b}</p>
+      </div>
+    </div>
+
+    <div class="mt-8 overflow-x-auto">
+      <p class="mb-3 text-sm font-bold uppercase tracking-[.14em] text-[#6e2430]">{t.quick}</p>
+      <table class="w-full min-w-[640px] border-collapse text-center text-sm">
+        <thead>
+          <tr class="text-[#6b5a50]">
+            {monthly.map(([m]) => <th class="px-2 py-2 font-semibold">{m}</th>)}
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            {monthly.map(([, r]) => (
+              <td class="border-t border-[#e5d9c8] px-2 py-3 text-[#54463e]">{r}</td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

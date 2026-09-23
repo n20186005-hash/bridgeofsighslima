@@ -1,0 +1,77 @@
+---
+// Itinerarios y planes de visita para el Puente de los Suspiros (Barranco).
+// Sin recomendaciones comerciales: solo perfiles de visitante y rutas por tipo.
+import type { Locale } from '../i18n';
+
+const { locale = 'es' as Locale } = Astro.props;
+
+const profilesEs = [
+  { tag: 'Familias con niños', color: 'bg-[#d89a2b]/15 text-[#7a5311]', icon: '👨‍👩‍👧', title: 'Tranquilo, plano y con paradas', text: 'Prioriza tramos llanos y descansos. El Parque Municipal y la Plazuela Chabuca Granda son cómodos para ir con carrito; la Bajada de Baños tiene pendiente, así que basta con recorrerla un tramo y volver.', tips: ['Empieza en el Parque Municipal (sombra, bancas y baños en locales cercanos).','Cruza el puente y la Plazuela Chabuca Granda a tu ritmo.','Baja unos metros por la Bajada de Baños y vuelve sin forzar el descenso.','Cierra con un café o helado en el casco histórico.'] },
+  { tag: 'Fotografía y naturaleza', color: 'bg-[#24574d]/15 text-[#24574d]', icon: '📷', title: 'Luz dorada y encuadres', text: 'El puente y la quebrada dan sus mejores fotos en la hora dorada. En verano, aprovecha los cielos despejados; en invierno, la garúa crea una atmósfera brumosa muy peculiar.', tips: ['Llega 1–2 h antes del atardecer para luz cálida sobre la madera y las barandas.','Sube al Mirador Catalina Recavarren para encuadrar la Costa Verde.','Incluye la Ermita y los muros de Barranco (murales y street art).','Lleva un paño para la lente si hay garúa.'] },
+  { tag: 'Bajo esfuerzo y accesible', color: 'bg-[#6e2430]/12 text-[#6e2430]', icon: '♿', title: 'Sin pendientes fuertes', text: 'Evita la Bajada de Baños, que tiene desnivel y escalones. Puedes disfrutar del puente y del entorno histórico por las calles llanas del casco y las plazas.', tips: ['Recorre el Parque Municipal y la Plazuela Chabuca Granda (ambos llanos).','Cruza el puente por su calzada superior, sin bajar a la quebrada.','Descansa en las bancas del parque y en las cafeterías del entorno.','Si necesitas rampas o ascensores, pregunta en el Centro de Visitantes o en la Municipalidad.'] }
+];
+const profilesEn = [
+  { tag: 'Families with children', color: 'bg-[#d89a2b]/15 text-[#7a5311]', icon: '👨‍👩‍👧', title: 'Calm, flat and with stops', text: 'Prioritize flat stretches and breaks. The Municipal Park and the Plazuela Chabuca Granda are comfortable with a stroller; the Bajada de Baños has slopes, so just walk a stretch and come back.', tips: ['Start at the Municipal Park (shade, benches and restrooms in nearby venues).','Cross the bridge and the Plazuela Chabuca Granda at your own pace.','Go down a few meters along the Bajada de Baños and return without forcing the descent.','Close with a coffee or ice cream in the historic center.'] },
+  { tag: 'Photography and nature', color: 'bg-[#24574d]/15 text-[#24574d]', icon: '📷', title: 'Golden light and framing', text: 'The bridge and the ravine give their best photos at the golden hour. In summer, take advantage of clear skies; in winter, the garúa creates a very peculiar misty atmosphere.', tips: ['Arrive 1–2 h before sunset for warm light on the wood and railings.','Go up to the Mirador Catalina Recavarren to frame the Costa Verde.','Include the Ermita and the walls of Barranco (murals and street art).','Bring a cloth for the lens if there is garúa.'] },
+  { tag: 'Low effort and accessible', color: 'bg-[#6e2430]/12 text-[#6e2430]', icon: '♿', title: 'Without steep slopes', text: 'Avoid the Bajada de Baños, which has slopes and steps. You can enjoy the bridge and the historic surroundings along the flat streets of the center and the plazas.', tips: ['Walk the Municipal Park and the Plazuela Chabuca Granda (both flat).','Cross the bridge on its upper deck, without going down to the ravine.','Rest on the park benches and the cafés in the area.','If you need ramps or elevators, ask at the Visitor Center or the Municipality.'] }
+];
+const profiles = locale === 'en' ? profilesEn : profilesEs;
+
+const routesEs = [
+  { name: 'Ruta de medio día (2–3 h)', summary: 'Lo esencial sin prisa.', steps: [['1','Parque Municipal de Barranco','Punto de partida llano, con sombra y referencia del distrito.'],['2','Puente de los Suspiros','Cruza la pasarela y lee la placa de Monumento Nacional.'],['3','Plazuela Chabuca Granda','Homenaje a la compositora cuyo vals nombró al puente.'],['4','Bajada de Baños (ida y vuelta)','Baja un tramo para sentir la quebrada y vuelve.'],['5','Café o refrigerio','Cierra en una cafetería del casco histórico.']] },
+  { name: 'Ruta de día completo (4–5 h)', summary: 'Barranco histórico y bohemio de punta a punta.', steps: [['1','Parque Municipal y Museo de Barranco','Contexto del distrito y su vida cultural.'],['2','Puente de los Suspiros y Plazuela Chabuca Granda','El núcleo del paseo.'],['3','Bajada de Baños hasta la orilla','Desciende con calma hasta la Costa Verde.'],['4','Ermita de Barranco','Templo histórico junto a la quebrada.'],['5','Mirador Catalina Recavarren','Vista panorámica del litoral.'],['6','Gastronomía y murales','Almuerzo y recorrido de arte urbano por el barrio.']] }
+];
+const routesEn = [
+  { name: 'Half-day route (2–3 h)', summary: 'The essentials without rush.', steps: [['1','Municipal Park of Barranco','Flat starting point, with shade and a reference of the district.'],['2','Bridge of Sighs','Cross the walkway and read the National Monument plaque.'],['3','Plazuela Chabuca Granda','Tribute to the composer whose waltz named the bridge.'],['4','Bajada de Baños (round trip)','Go down a stretch to feel the ravine and come back.'],['5','Coffee or snack','Close at a café in the historic center.']] },
+  { name: 'Full-day route (4–5 h)', summary: 'Historic and bohemian Barranco from end to end.', steps: [['1','Municipal Park and Barranco Museum','Context of the district and its cultural life.'],['2','Bridge of Sighs and Plazuela Chabuca Granda','The core of the walk.'],['3','Bajada de Baños to the shore','Descend calmly to the Costa Verde.'],['4','Ermita de Barranco','Historic temple next to the ravine.'],['5','Mirador Catalina Recavarren','Panoramic view of the coastline.'],['6','Food and murals','Lunch and urban-art walk through the neighborhood.']] }
+];
+const routes = locale === 'en' ? routesEn : routesEs;
+
+const t = locale === 'en'
+  ? { eyebrow: 'How to tour it', h2: 'Itineraries and plans by traveler', intro: 'There is no single way to visit the Bridge of Sighs. These plans are indicative and are grouped by type of traveler and by available time. They do not promote businesses: they indicate categories and public places of the historic circuit.' }
+  : { eyebrow: 'Cómo recorrerlo', h2: 'Itinerarios y planes según el viajero', intro: 'No hay una sola forma de visitar el Puente de los Suspiros. Estos planes son orientativos y se agrupan por tipo de viajero y por tiempo disponible. No promueven comercios: indican categorías y lugares públicos del circuito histórico.' };
+---
+<section id="itinerarios" aria-labelledby="itinerarios-titulo" class="bg-[#fffaf1] py-20">
+  <div class="mx-auto max-w-7xl px-5 lg:px-8">
+    <p class="text-sm font-bold uppercase tracking-[.18em] text-[#24574d]">{t.eyebrow}</p>
+    <h2 id="itinerarios-titulo" class="serif mt-3 max-w-4xl text-4xl font-bold text-[#48151f] sm:text-5xl">{t.h2}</h2>
+    <p class="mt-5 max-w-3xl text-lg text-[#594a41]">{t.intro}</p>
+
+    <div class="mt-10 grid gap-5 md:grid-cols-3">
+      {profiles.map((p) => (
+        <article class="flex flex-col rounded-3xl border border-[#d8c8b2] bg-white p-6 shadow-sm">
+          <span class={'self-start rounded-full px-3 py-1 text-[.68rem] font-bold uppercase tracking-[.12em] ' + p.color}>{p.tag}</span>
+          <h3 class="serif mt-4 text-2xl font-bold text-[#48151f]">{p.icon} {p.title}</h3>
+          <p class="mt-2 text-[#5e4e45]">{p.text}</p>
+          <ul class="mt-4 space-y-2 text-sm text-[#54463e]">
+            {p.tips.map((ti) => (
+              <li class="flex gap-2"><span class="text-[#6e2430]">•</span><span>{ti}</span></li>
+            ))}
+          </ul>
+        </article>
+      ))}
+    </div>
+
+    <div class="mt-12 grid gap-6 lg:grid-cols-2">
+      {routes.map((r) => (
+        <div class="overflow-hidden rounded-3xl border border-[#d8c8b2] bg-white shadow-sm">
+          <div class="border-b border-[#e5d9c8] bg-[#6e2430] px-6 py-4 text-white">
+            <h3 class="serif text-2xl font-bold">{r.name}</h3>
+            <p class="mt-1 text-sm text-[#f1dfe2]">{r.summary}</p>
+          </div>
+          <ol class="px-6 py-5">
+            {r.steps.map(([n, ti, d]) => (
+              <li class="flex gap-4 border-b border-[#f0e6d6] py-3 last:border-0">
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#24574d] text-sm font-bold text-white">{n}</span>
+                <div>
+                  <p class="font-bold text-[#48151f]">{ti}</p>
+                  <p class="text-sm text-[#5e4e45]">{d}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

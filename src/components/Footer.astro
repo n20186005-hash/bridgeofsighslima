@@ -1,25 +1,32 @@
 ---
 import Logo from './Logo.astro';
+import { uiFor, type Locale } from '../i18n';
+
+const { locale = 'es' as Locale } = Astro.props;
+const f = uiFor(locale).footer;
+// Las páginas legales (privacidad/términos/cookies) aún son solo en español;
+// los enlaces apuntan a ellas y las etiquetas se localizan.
+const legalBase = '/';
 ---
 <footer class="mt-20 border-t border-[#cdbda6] bg-[#231a17] text-[#efe4d4]">
   <div class="bridge-rule"></div>
   <div class="mx-auto grid max-w-7xl gap-10 px-5 py-12 lg:grid-cols-[1fr_1.25fr] lg:px-8">
     <div>
       <div class="rounded-2xl bg-[#fffaf1] p-4 inline-block"><Logo /></div>
-      <p class="mt-5 max-w-xl text-sm text-[#d9cbbb]">Guía independiente para comprender y visitar el Puente de los Suspiros y su entorno histórico en Barranco, Lima.</p>
+      <p class="mt-5 max-w-xl text-sm text-[#d9cbbb]">{f.tagline}</p>
       <div class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm">
-        <a class="focus-ring underline hover:text-white" href="/privacidad/">Privacidad</a>
-        <a class="focus-ring underline hover:text-white" href="/terminos/">Términos de uso</a>
-        <a class="focus-ring underline hover:text-white" href="/cookies/">Configuración de cookies</a>
+        <a class="focus-ring underline hover:text-white" href={legalBase + 'privacidad/'}>{f.privacy}</a>
+        <a class="focus-ring underline hover:text-white" href={legalBase + 'terminos/'}>{f.terms}</a>
+        <a class="focus-ring underline hover:text-white" href={legalBase + 'cookies/'}>{f.cookies}</a>
       </div>
     </div>
     <div class="space-y-3 text-sm text-[#d9cbbb]">
-      <p>Este sitio es un proyecto independiente y sin fines de lucro de información para visitantes. No está afiliado a ninguna entidad gubernamental ni organización oficial.</p>
-      <p>La información del atractivo se contrasta con fuentes públicas de la Municipalidad Distrital de Barranco, la Municipalidad Metropolitana de Lima y las entidades nacionales de turismo del Perú, entre ellas MINCETUR y PROMPERÚ. No contiene recomendaciones comerciales pagadas: cuando se mencionan servicios (baños, estacionamiento, gastronomía, alojamiento u otros), se indica únicamente la categoría, sin marcas ni comercios concretos.</p>
-      <p>El pronóstico del tiempo usa el servicio abierto Open-Meteo, sin claves ni cookies, y puede contrastarse con el SENAMHI, la fuente meteorológica oficial del Perú.</p>
-      <p>Derechos de imagen: la autoría y los derechos de las fotografías mostradas corresponden a sus respectivos fotógrafos; su uso se rige por las licencias indicadas en los Términos de uso.</p>
-      <p>Contenido revisado y actualizado por última vez el 3 de septiembre de 2026. Fecha de las fuentes públicas citadas y de la información de acceso: 2026.</p>
-      <p class="pt-2 font-semibold text-white">© 2026 Guía del Puente de los Suspiros. Todos los derechos reservados sobre el diseño y los contenidos originales del sitio.</p>
+      <p>{f.independent}</p>
+      <p>{f.sources}</p>
+      <p>{f.weather}</p>
+      <p>{f.images}</p>
+      <p>{f.updated}</p>
+      <p class="pt-2 font-semibold text-white">{f.copyright}</p>
     </div>
   </div>
 </footer>

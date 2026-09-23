@@ -1,16 +1,37 @@
 ---
 import Logo from './Logo.astro';
+import { uiFor, localeMeta, type Locale } from '../i18n';
+
+const { locale = 'es' as Locale } = Astro.props;
+const ui = uiFor(locale);
+const base = locale === 'en' ? '/en' : '';
+const navItems: [string, string][] = [
+  ['historia', ui.nav.historia],
+  ['visita', ui.nav.visita],
+  ['como-llegar', ui.nav.comoLlegar],
+  ['alrededores', ui.nav.alrededores],
+  ['itinerarios', ui.nav.itinerarios],
+  ['preguntas', ui.nav.preguntas]
+];
+const logoHref = locale === 'en' ? '/en/' : '/';
+const other = locale === 'en' ? 'es' : 'en';
+const switchHref = locale === 'en' ? '/' : '/en/';
+const switchLabel = locale === 'en' ? 'ES' : 'EN';
+const switchTitle = locale === 'en' ? ui.backTo : ui.goTo;
 ---
 <header class="sticky top-0 z-50 border-b border-[#d8c8b2]/80 bg-[#f7f0e4]/95 backdrop-blur">
   <div class="mx-auto flex max-w-7xl items-center justify-between gap-5 px-5 py-3 lg:px-8">
-    <Logo compact />
+    <a href={logoHref} class="focus-ring inline-flex items-center no-underline" aria-label="Bridge of Sighs">
+      <Logo compact />
+    </a>
     <nav aria-label="Navegación principal" class="hidden items-center gap-6 text-sm font-semibold text-[#4a3d36] md:flex">
-      <a class="focus-ring hover:text-[#6e2430]" href="/#historia">Historia</a>
-      <a class="focus-ring hover:text-[#6e2430]" href="/#visita">Visita</a>
-      <a class="focus-ring hover:text-[#6e2430]" href="/#como-llegar">Cómo llegar</a>
-      <a class="focus-ring hover:text-[#6e2430]" href="/#alrededores">Alrededores</a>
-      <a class="focus-ring hover:text-[#6e2430]" href="/#preguntas">Preguntas</a>
+      {navItems.map(([id, label]) => (
+        <a class="focus-ring hover:text-[#6e2430]" href={base + '/#' + id}>{label}</a>
+      ))}
     </nav>
-    <a href="https://maps.app.goo.gl/JtXw9jp7DcAQgdRu5" target="_blank" rel="noopener noreferrer" class="focus-ring rounded-full bg-[#6e2430] px-4 py-2 text-sm font-bold text-white no-underline shadow-sm transition hover:bg-[#48151f]">Abrir mapa</a>
+    <div class="flex items-center gap-3">
+      <a href={switchHref} title={switchTitle} class="focus-ring rounded-full border border-[#6e2430]/30 px-3 py-1.5 text-xs font-bold text-[#6e2430] no-underline hover:bg-[#6e2430] hover:text-white">{switchLabel}</a>
+      <a href="https://maps.app.goo.gl/JtXw9jp7DcAQgdRu5" target="_blank" rel="noopener noreferrer" class="focus-ring rounded-full bg-[#6e2430] px-4 py-2 text-sm font-bold text-white no-underline shadow-sm transition hover:bg-[#48151f]">{ui.openMap}</a>
+    </div>
   </div>
 </header>
