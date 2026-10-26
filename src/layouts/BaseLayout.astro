@@ -36,7 +36,7 @@ const isHome = stripped === '/';
 const alternates: { hreflang: string; href: string }[] = [];
 if (isHome && Astro.site) {
   const home = Astro.site.href.replace(/\/$/, '');
-  alternates.push({ hreflang: 'es', href: home + '/' });
+  alternates.push({ hreflang: 'es-PE', href: home + '/' });
   alternates.push({ hreflang: 'en', href: home + '/en/' });
   alternates.push({ hreflang: 'x-default', href: home + '/' });
 }
@@ -78,22 +78,7 @@ if (isHome && Astro.site) {
     <meta name="twitter:image" content={socialImage} />
     {ogImageAlt && <meta name="twitter:image:alt" content={ogImageAlt} />}
     {schemaItems.map((item) => <script is:inline type="application/ld+json" set:html={JSON.stringify(item)}></script>)}
-    <script is:inline>
-      (() => {
-        const key = 'puente-cookie-preferences';
-        let prefs = null;
-        try { prefs = JSON.parse(localStorage.getItem(key) || 'null'); } catch (_) {}
-        if (!prefs?.analytics) return;
-        window.dataLayer = window.dataLayer || [];
-        window.gtag = function(){ window.dataLayer.push(arguments); };
-        window.gtag('js', new Date());
-        window.gtag('config', 'G-HXM22WWPKP', { anonymize_ip: true });
-        const s = document.createElement('script');
-        s.async = true;
-        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-HXM22WWPKP';
-        document.head.appendChild(s);
-      })();
-    </script>
+    <script is:inline src="/analytics.js"></script>
     <script is:inline>
       // Registro del service worker (solo HTTP/HTTPS y fuera del desarrollo local).
       if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol) && !location.hostname.includes('local' + 'host')) {

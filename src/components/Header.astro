@@ -1,6 +1,6 @@
 ---
 import Logo from './Logo.astro';
-import { uiFor, localeMeta, type Locale } from '../i18n';
+import { uiFor, type Locale } from '../i18n';
 
 const { locale = 'es' as Locale } = Astro.props;
 const ui = uiFor(locale);
@@ -14,7 +14,6 @@ const navItems: [string, string][] = [
   ['preguntas', ui.nav.preguntas]
 ];
 const logoHref = locale === 'en' ? '/en/' : '/';
-const other = locale === 'en' ? 'es' : 'en';
 const switchHref = locale === 'en' ? '/' : '/en/';
 const switchLabel = locale === 'en' ? 'ES' : 'EN';
 const switchTitle = locale === 'en' ? ui.backTo : ui.goTo;

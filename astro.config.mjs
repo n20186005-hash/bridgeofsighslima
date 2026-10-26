@@ -26,7 +26,7 @@ export default defineConfig({
           en: 'en'
         }
       },
-      filter: (page) => !page.includes('/404')
+      filter: (page) => ! /\/(?:404|cookies|privacidad|terminos)\/?$/.test(new URL(page).pathname)
     })
   ],
   vite: {

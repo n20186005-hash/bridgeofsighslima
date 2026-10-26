@@ -1,0 +1,8 @@
+---
+import type {Locale} from '../i18n';
+interface Props {locale:Locale;photo:'hero'|'bridge'|'bajada'|'ermita';}
+const {locale,photo}=Astro.props;
+const files={hero:{author:'HLaiza',date:'2020-10-10',file:'PUENTE_DE_LOS_SUSPIROS.jpg'},bridge:{author:'Ivan Brehaut L. (Ibrehaut)',date:'2016-02-12',file:'Puente_de_los_Suspiros,_Barranco.jpg'},bajada:{author:'Nina Zaitceva',date:'2015-03-02',file:'Bajada_de_Baños,_Barranco.jpg'},ermita:{author:'Herwarth Morales',date:'2020-10-01',file:'Puente_de_los_Suspiros_Barranco.jpg'}};
+const p=files[photo];const source='https://commons.wikimedia.org/wiki/File:'+encodeURIComponent(p.file);
+---
+<span>{p.author} · {p.date} · <a class="underline" href={source} target="_blank" rel="noopener noreferrer">Wikimedia Commons</a> · <a class="underline" href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>. {locale==='en'?'Optimized and cropped for display; historical photograph, not a live view.':'Optimizada y recortada para la presentación; fotografía histórica, no vista en tiempo real.'}</span>

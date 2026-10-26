@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PhotoCredit from './PhotoCredit.astro';
 import MapEmbed from '../components/MapEmbed.astro';
 import Facilities from '../components/Facilities.astro';
 import Weather from '../components/Weather.astro';
@@ -7,10 +8,11 @@ import SeasonalStrategy from '../components/SeasonalStrategy.astro';
 import Environment from '../components/Environment.astro';
 import Itineraries from '../components/Itineraries.astro';
 import Responsibility from '../components/Responsibility.astro';
-import { guide, buildPlaceSchema, buildFaqSchema, clarification, type GuideContent } from '../data/guide';
+import { guide, buildPlaceSchema, clarification, type GuideContent } from '../data/guide';
 import { type Locale } from '../i18n';
 
-const { locale = 'es' as Locale } = Astro.props;
+interface Props { locale?: Locale; }
+const { locale = 'es' } = Astro.props;
 const g: GuideContent = guide[locale];
 const clar = clarification[locale];
 const anchorBase = locale === 'en' ? '/en' : '';
@@ -21,12 +23,11 @@ const PHOTO_BAJADA = '/images/bajada-de-banos.jpg';
 const PHOTO_ERMITA = '/images/puente-ermita.jpg';
 
 const heroImage = Astro.site ? new URL(PHOTO_HERO, Astro.site).href : PHOTO_HERO;
-const attractionUrl = Astro.site ? new URL('/#puente-de-los-suspiros', Astro.site).href : undefined;
 const homeUrl = Astro.site ? new URL('/' + (locale === 'en' ? 'en/' : ''), Astro.site).href : undefined;
 const mapsShareUrl = 'https://maps.app.goo.gl/JtXw9jp7DcAQgdRu5';
 
 const placeSchema = buildPlaceSchema(locale);
-// Añadimos la aclaración de "casa de los suspiros" al final de las FAQ.
+// La aclaración geográfica se muestra y se publica en las mismas FAQ.
 const faq = [...g.faq, { q: clar.q, a: clar.a }];
 const faqSchema = {
   '@context': 'https://schema.org',
@@ -46,7 +47,7 @@ const graphSchema = homeUrl ? {
       '@id': homeUrl + '#organization',
       name: 'Guía del Puente de los Suspiros',
       url: homeUrl,
-      logo: homeUrl + 'favicon.svg'
+      logo: 'https://bridgeofsighslima.com/favicon.svg'
     },
     {
       '@type': 'WebSite',
@@ -63,10 +64,10 @@ const graphSchema = homeUrl ? {
       name: g.schema.webPageName,
       description: g.schema.webPageDescription,
       isPartOf: { '@id': homeUrl + '#website' },
-      about: { '@id': homeUrl + '#puente-de-los-suspiros' },
+      about: { '@id': placeSchema['@id'] },
       primaryImageOfPage: heroImage,
       datePublished: '2026-09-03',
-      dateModified: '2026-09-03',
+      dateModified: '2026-10-25',
       inLanguage: locale === 'en' ? 'en' : 'es-PE'
     },
     {
@@ -85,13 +86,13 @@ const alt = locale === 'en'
       hero: 'Bridge of Sighs (Puente de los Suspiros) in Barranco, historic wooden bridge in Lima, Peru',
       bridge: 'Wooden structure of the Bridge of Sighs in Barranco',
       bajada: 'Bajada de Baños in Barranco, historic path beneath the Bridge of Sighs',
-      ermita: 'Bridge of Sighs with palm trees and the Ermita de Barranco in the background'
+      ermita: 'Historical photograph of the Bridge of Sighs and palm trees'
     }
   : {
       hero: 'Puente de los Suspiros (Bridge of Sighs) de Barranco, puente histórico de madera en Lima, Perú',
       bridge: 'Estructura de madera del Puente de los Suspiros en Barranco',
       bajada: 'Bajada de Baños de Barranco, camino histórico que pasa bajo el Puente de los Suspiros (Bridge of Sighs)',
-      ermita: 'Puente de los Suspiros con palmeras y la Ermita de Barranco al fondo'
+      ermita: 'Fotografía histórica del Puente de los Suspiros y palmeras'
     };
 
 const s = g.stats;
@@ -116,7 +117,7 @@ const s = g.stats;
           <a href="#visita" class="focus-ring rounded-full bg-[#d89a2b] px-6 py-3 font-bold text-[#2b1d17] no-underline hover:bg-[#efb950]">{g.hero.ctaPrimary}</a>
           <a href="#historia" class="focus-ring rounded-full border border-white/60 bg-white/10 px-6 py-3 font-bold text-white no-underline backdrop-blur hover:bg-white/20">{g.hero.ctaSecondary}</a>
         </div>
-        <p class="mt-5 text-xs text-[#e6d8c8]">{g.hero.credit}</p>
+        <p class="mt-5 text-xs text-[#e6d8c8]"><PhotoCredit {locale} photo="hero" /></p>
       </div>
     </div>
   </section>
@@ -146,7 +147,7 @@ const s = g.stats;
         <a href={g.banner.link} target="_blank" rel="external noopener noreferrer" class="focus-ring shrink-0 font-bold text-[#6e2430] underline">{g.banner.linkLabel}</a>
       </div>
     </div>
-    <div class="mx-auto mt-6 grid max-w-7xl grid-cols-2 gap-px bg-[#d8c8b2] md:grid-cols-4">
+    <div class="mx-auto mt-6 grid max-w-7xl grid-cols-1 gap-px sm:grid-cols-2 bg-[#d8c8b2] md:grid-cols-4">
       <div class="bg-[#fffaf1] p-6"><span class="block text-xs font-bold uppercase tracking-[.16em] text-[#6e2430]">{s.ratingLabel}</span><strong class="serif mt-1 block text-3xl text-[#2b1d17]">{s.ratingValue}</strong><small class="text-[#6b5a50]">{s.ratingNote}</small></div>
       <div class="bg-[#fffaf1] p-6"><span class="block text-xs font-bold uppercase tracking-[.16em] text-[#6e2430]">{s.accessLabel}</span><strong class="serif mt-1 block text-3xl text-[#2b1d17]">{s.accessValue}</strong><small class="text-[#6b5a50]">{s.accessNote}</small></div>
       <div class="bg-[#fffaf1] p-6"><span class="block text-xs font-bold uppercase tracking-[.16em] text-[#6e2430]">{s.hoursLabel}</span><strong class="serif mt-1 block text-3xl text-[#2b1d17]">{s.hoursValue}</strong><small class="text-[#6b5a50]">{s.hoursNote}</small></div>
@@ -178,7 +179,7 @@ const s = g.stats;
       </div>
       <figure class="overflow-hidden rounded-[2rem] bg-[#291e19] shadow-2xl shadow-[#473125]/20">
         <img src={PHOTO_BRIDGE} alt={alt.bridge} class="aspect-[4/5] w-full object-cover" loading="lazy" decoding="async" />
-        <figcaption class="p-4 text-xs text-[#e6d8c8]">Fotografía real: Ivan Brehaut L., Wikimedia Commons, CC BY-SA 4.0.</figcaption>
+        <figcaption class="p-4 text-xs text-[#e6d8c8]"><PhotoCredit {locale} photo="bridge" /></figcaption>
       </figure>
     </div>
   </section>
@@ -264,7 +265,7 @@ const s = g.stats;
           <h2 class="serif mt-3 text-4xl font-bold text-[#48151f] sm:text-5xl">{g.alrededores.h2}</h2>
           <p class="mt-5 max-w-2xl text-lg text-[#594a41]">{g.alrededores.lead}</p>
         </div>
-        <figure class="overflow-hidden rounded-[2rem] bg-[#291e19]"><img src={PHOTO_BAJADA} alt={alt.bajada} class="aspect-[16/10] w-full object-cover" loading="lazy" decoding="async" /><figcaption class="p-4 text-xs text-[#e6d8c8]">Fotografía real: Nina Zaitceva, Wikimedia Commons, CC BY-SA 4.0.</figcaption></figure>
+        <figure class="overflow-hidden rounded-[2rem] bg-[#291e19]"><img src={PHOTO_BAJADA} alt={alt.bajada} class="aspect-[16/10] w-full object-cover" loading="lazy" decoding="async" /><figcaption class="p-4 text-xs text-[#e6d8c8]"><PhotoCredit {locale} photo="bajada" /></figcaption></figure>
       </div>
       <div class="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
         {g.alrededores.cards.map((c) => (
@@ -276,7 +277,7 @@ const s = g.stats;
 
   <section id="gastronomia" aria-labelledby="gastronomia-titulo" class="mx-auto max-w-7xl px-5 py-20 lg:px-8">
     <div class="grid items-center gap-12 lg:grid-cols-2">
-      <figure class="overflow-hidden rounded-[2rem] bg-[#291e19] shadow-xl"><img src={PHOTO_ERMITA} alt={alt.ermita} class="aspect-square w-full object-cover" loading="lazy" decoding="async" /><figcaption class="p-4 text-xs text-[#e6d8c8]">Fotografía real: Herwarth Morales, Wikimedia Commons, CC BY-SA 4.0.</figcaption></figure>
+      <figure class="overflow-hidden rounded-[2rem] bg-[#291e19] shadow-xl"><img src={PHOTO_ERMITA} alt={alt.ermita} class="aspect-square w-full object-cover" loading="lazy" decoding="async" /><figcaption class="p-4 text-xs text-[#e6d8c8]"><PhotoCredit {locale} photo="ermita" /></figcaption></figure>
       <div>
         <p class="text-sm font-bold uppercase tracking-[.18em] text-[#24574d]">{g.gastronomia.eyebrow}</p>
         <h2 class="serif mt-3 text-4xl font-bold text-[#48151f] sm:text-5xl">{g.gastronomia.h2}</h2>

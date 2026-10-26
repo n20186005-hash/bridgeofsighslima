@@ -7,11 +7,12 @@ import * as https from 'https';
 import type { Locale } from '../i18n';
 import { weatherI18n } from '../data/weather-i18n';
 
-const { locale = 'es' as Locale } = Astro.props;
+interface Props { locale?: Locale; }
+const { locale = 'es' } = Astro.props;
 const wi = weatherI18n[locale];
 
-const LAT = -12.1491401;
-const LON = -77.022624;
+const LAT = -12.1491798;
+const LON = -77.0226004;
 const TIMEZONE = 'America/Lima';
 const FORECAST_DAYS = 7;
 
@@ -26,46 +27,39 @@ const endpoint =
 // Consulta con módulo core https (evita el dispatcher global de undici/fetch,
 // que en algunas versiones de Node para Windows produce un fallo al salir).
 function fetchJson(url: string, timeoutMs: number): Promise<any> {
-  return new Promise<any>((resolve) => {
-    const req = https.get(
-      url,
-      { headers: { accept: 'application/json' } },
-      (res) => {
-        if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-          let body = '';
-          res.setEncoding('utf8');
-          res.on('data', (chunk) => { body += chunk; });
-          res.on('end', () => {
-            try { resolve(JSON.parse(body)); } catch (_) { resolve(null); }
-          });
-        } else {
-          res.resume();
-          resolve(null);
-        }
-      }
-    );
-    req.on('error', () => resolve(null));
-    req.setTimeout(timeoutMs, () => { req.destroy(); resolve(null); });
-  });
+ return new Promise(resolve=>{let done=false;let req: ReturnType<typeof https.get> | undefined;
+ const finish=(value:any)=>{if(done)return;done=true;clearTimeout(timer);resolve(value);};
+ const timer=setTimeout(()=>{req?.destroy();finish(null);},timeoutMs);
+ req=https.get(url,{headers:{accept:'application/json'}},res=>{if(!res.statusCode||res.statusCode<200||res.statusCode>=300){res.resume();finish(null);return;}let body='';res.setEncoding('utf8');res.on('data',chunk=>{body+=chunk;if(body.length>524288){req?.destroy();finish(null);}});res.on('error',()=>finish(null));res.on('end',()=>{try{finish(JSON.parse(body));}catch{finish(null);}});});req.on('error',()=>finish(null));
+ });
 }
 
-let seed = null;
+function validateWeather(d: any) {
+ const c=d?.current,x=d?.daily,tz='America/Lima';
+ const number=(v: any,lo: number,hi: number)=>{if(typeof v!=='number'||!Number.isFinite(v)||v<lo||v>hi)throw Error('Invalid weather number');};
+ const codes=[0,1,2,3,45,48,51,53,55,56,57,61,63,65,66,67,71,73,75,77,80,81,82,85,86,95,96,99];
+ const code=(v: any)=>{if(typeof v!=='number'||!codes.includes(v))throw Error('Invalid WMO');};
+ const today=new Intl.DateTimeFormat('en-CA',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ if(!c||!x||d.timezone!==tz||typeof c.time!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(c.time))throw Error('Incomplete weather');
+ const age=Date.now()-Date.parse(c.time+'-05:00');if(!Number.isFinite(age)||age>10800000||age< -900000||c.time.slice(0,10)!==today)throw Error('Stale weather');
+ number(c.temperature_2m,-100,65);number(c.apparent_temperature,-120,80);number(c.relative_humidity_2m,0,100);number(c.wind_speed_10m,0,500);code(c.weather_code);if(![0,1].includes(c.is_day))throw Error('Invalid day');
+ for(const k of ['time','weather_code','temperature_2m_max','temperature_2m_min','precipitation_probability_max','uv_index_max','wind_speed_10m_max'])if(!Array.isArray(x[k])||x[k].length!==7)throw Error('Incomplete days');
+ x.time.forEach((day: any,i: number)=>{if(typeof day!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(day)||!Number.isFinite(Date.parse(day))||new Date(day).toISOString().slice(0,10)!==day||(i===0&&day!==today)||(i>0&&Date.parse(day)-Date.parse(x.time[i-1])!==86400000))throw Error('Invalid daily dates');number(x.temperature_2m_max[i],-100,65);number(x.temperature_2m_min[i],-100,65);if(x.temperature_2m_min[i]>x.temperature_2m_max[i])throw Error('Inverted temperatures');code(x.weather_code[i]);if(x.precipitation_probability_max[i]!==null)number(x.precipitation_probability_max[i],0,100);if(x.uv_index_max[i]!==null)number(x.uv_index_max[i],0,30);if(x.wind_speed_10m_max[i]!==null)number(x.wind_speed_10m_max[i],0,500);});return d;
+}
+
+let seed: any = null;
 let seedLabel = '';
 const json = await fetchJson(endpoint, 7000);
 if (json?.current && json?.daily?.time?.length) {
-  seed = json;
+  try { seed = validateWeather(json); } catch { seed = null; }
   try {
-    seedLabel = new Intl.DateTimeFormat(wi.dateLocale, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-      timeZone: TIMEZONE
-    }).format(new Date());
+    seedLabel = seed ? seed.current.time.replace('T', ' ') + ' · America/Lima (UTC−5)' : '';
   } catch (_) {
     seedLabel = String(new Date());
   }
 }
 
-const seedJson = JSON.stringify(seed);
+const seedJson = JSON.stringify(seed).replace(/</g, '\\u003c');
 const wiJson = JSON.stringify(wi);
 ---
 <section id="clima" aria-labelledby="clima-titulo" class="mx-auto max-w-7xl px-5 py-20 lg:px-8">
@@ -75,7 +69,7 @@ const wiJson = JSON.stringify(wi);
 
   <div class="mt-10 grid gap-6 lg:grid-cols-[.9fr_1.1fr]">
     <div class="grid content-start gap-5 sm:grid-cols-2 lg:grid-cols-1">
-      {wi.cards.map((c) => (
+      {wi.cards.map((c: { title: string; text: string }) => (
         <article class="rounded-3xl border border-[#d8c8b2] bg-[#fffaf1] p-6 shadow-sm">
           <h3 class="serif text-xl font-bold text-[#48151f]">{c.title}</h3>
           <p class="mt-2 text-[.95rem] text-[#5e4e45]" set:html={c.text}></p>
@@ -112,15 +106,16 @@ const wiJson = JSON.stringify(wi);
   </div>
 </section>
 
-<script type="application/json" id="weather-i18n" set:html={wiJson}></script>
+<script is:inline type="application/json" id="weather-seed" set:html={seedJson}></script>
+<script is:inline type="application/json" id="weather-i18n" set:html={wiJson}></script>
 
 <script is:inline>
 (() => {
   'use strict';
-  const KEY = 'puente-weather-cache-v1';
+  const KEY = 'puente-weather-cache-v2';
   const TTL = 30 * 60 * 1000;
-  const LAT = -12.1491401;
-  const LON = -77.022624;
+  const LAT = -12.1491798;
+  const LON = -77.0226004;
   const TZ = 'America/Lima';
   const DAYS = 7;
   const URL =
@@ -135,6 +130,19 @@ const wiJson = JSON.stringify(wi);
     const n = document.getElementById('weather-i18n');
     if (n && n.textContent && n.textContent.trim()) WI = JSON.parse(n.textContent);
   } catch (_) { WI = {}; }
+function validateWeather(d) {
+ const c=d?.current,x=d?.daily,tz='America/Lima';
+ const number=(v,lo,hi)=>{if(typeof v!=='number'||!Number.isFinite(v)||v<lo||v>hi)throw Error('Invalid weather number');};
+ const codes=[0,1,2,3,45,48,51,53,55,56,57,61,63,65,66,67,71,73,75,77,80,81,82,85,86,95,96,99];
+ const code=v=>{if(typeof v!=='number'||!codes.includes(v))throw Error('Invalid WMO');};
+ const today=new Intl.DateTimeFormat('en-CA',{timeZone:tz,year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ if(!c||!x||d.timezone!==tz||typeof c.time!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(c.time))throw Error('Incomplete weather');
+ const age=Date.now()-Date.parse(c.time+'-05:00');if(!Number.isFinite(age)||age>10800000||age< -900000||c.time.slice(0,10)!==today)throw Error('Stale weather');
+ number(c.temperature_2m,-100,65);number(c.apparent_temperature,-120,80);number(c.relative_humidity_2m,0,100);number(c.wind_speed_10m,0,500);code(c.weather_code);if(![0,1].includes(c.is_day))throw Error('Invalid day');
+ for(const k of ['time','weather_code','temperature_2m_max','temperature_2m_min','precipitation_probability_max','uv_index_max','wind_speed_10m_max'])if(!Array.isArray(x[k])||x[k].length!==7)throw Error('Incomplete days');
+ x.time.forEach((day,i)=>{if(typeof day!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(day)||!Number.isFinite(Date.parse(day))||new Date(day).toISOString().slice(0,10)!==day||(i===0&&day!==today)||(i>0&&Date.parse(day)-Date.parse(x.time[i-1])!==86400000))throw Error('Invalid daily dates');number(x.temperature_2m_max[i],-100,65);number(x.temperature_2m_min[i],-100,65);if(x.temperature_2m_min[i]>x.temperature_2m_max[i])throw Error('Inverted temperatures');code(x.weather_code[i]);if(x.precipitation_probability_max[i]!==null)number(x.precipitation_probability_max[i],0,100);if(x.uv_index_max[i]!==null)number(x.uv_index_max[i],0,30);if(x.wind_speed_10m_max[i]!==null)number(x.wind_speed_10m_max[i],0,500);});return d;
+}
+
   const WMO = WI.wmo || {};
   const A = WI.advice || {};
   const UI = WI.ui || {};
@@ -184,7 +192,7 @@ const wiJson = JSON.stringify(wi);
       const raw = localStorage.getItem(KEY);
       if (!raw) return null;
       const obj = JSON.parse(raw);
-      return (obj && obj.d && obj.t) ? obj : null;
+      const age=Date.now()-obj?.t; if(!obj||typeof obj.t!=='number'||!Number.isFinite(age)||age<0||age>=TTL)return null;validateWeather(obj.d);return obj;
     } catch (_) { return null; }
   }
   function guardarCache(data) {
@@ -217,10 +225,11 @@ const wiJson = JSON.stringify(wi);
   }
 
   function renderDias(d) {
+    const unit = UI.celsius || ' °C';
     const daily = d.daily;
     if (!daily || !Array.isArray(daily.time)) return '';
-    const fmtDia = new Intl.DateTimeFormat(DATE_LOCALE, { weekday: 'short' });
-    const fmtNum = new Intl.DateTimeFormat(DATE_LOCALE, { day: 'numeric', month: 'short' });
+    const fmtDia = new Intl.DateTimeFormat(DATE_LOCALE, { weekday: 'short', timeZone:'UTC' });
+    const fmtNum = new Intl.DateTimeFormat(DATE_LOCALE, { day: 'numeric', month: 'short', timeZone:'UTC' });
     const tarjetas = daily.time.map(function (fecha, i) {
       const code = Array.isArray(daily.weather_code) ? daily.weather_code[i] : 0;
       const max = Math.round(Array.isArray(daily.temperature_2m_max) ? daily.temperature_2m_max[i] : 0);
@@ -229,7 +238,7 @@ const wiJson = JSON.stringify(wi);
       let dn = '';
       let fn = '';
       try {
-        const fechaLocal = new Date(fecha + 'T12:00:00');
+        const fechaLocal = new Date(fecha + 'T12:00:00Z');
         dn = fmtDia.format(fechaLocal).replace(/\.$/, '');
         dn = dn.charAt(0).toUpperCase() + dn.slice(1);
         fn = fmtNum.format(fechaLocal);
@@ -277,7 +286,7 @@ const wiJson = JSON.stringify(wi);
     const code = (cC != null) ? cC : (cD == null ? 2 : cD);
     const bft = beaufort(wind);
     const lluvia = esLluvia(code);
-    const fuerte = (code === 65 || code === 82);
+    const fuerte = (code === 65 || code === 67 || code === 82);
     const tormenta = code >= 95;
     const niebla = (code === 45 || code === 48);
     const despejado = code <= 1;
@@ -355,7 +364,7 @@ const wiJson = JSON.stringify(wi);
     }
     if (elMeta && mostroAlgo) {
       try {
-        const ahora = new Date().toLocaleTimeString(DATE_LOCALE, { hour: '2-digit', minute: '2-digit', timeZone: TZ });
+        const ahora = d.current.time.replace('T',' ') + ' · America/Lima (UTC−5)';
         elMeta.textContent = (UI.updatedPrefix || '') + ahora + (UI.updatedSuffix || '');
       } catch (_) {
         elMeta.textContent = (WI.meta && WI.meta.seedFallback) || '';
@@ -367,34 +376,20 @@ const wiJson = JSON.stringify(wi);
   }
 
   function mostrarError() {
-    if (mostroAlgo || elActual) { if (!mostroAlgo && elActual) elActual.innerHTML = ''; }
-    if (elActual && !mostroAlgo) {
-      elActual.innerHTML = '<p class="text-sm text-[#e7f0ed]">' + (UI.errConnect || '') + '</p>';
-    }
-    if (elDias && !mostroAlgo && elDias) elDias.innerHTML = '';
+    if(elMeta) elMeta.textContent=(mostroAlgo?elMeta.textContent+' · ':'')+(DATE_LOCALE.startsWith('en')?'Refresh unavailable; weather does not confirm bridge access.':'No se pudo actualizar; el clima no confirma el acceso al puente.');
+    if(mostroAlgo)return;
+    if(elActual)elActual.innerHTML='<p>'+ (UI.errConnect || '') +'</p>';
+    if(elDias)elDias.innerHTML='';if(elConsejo)elConsejo.innerHTML='';
   }
-
   (function iniciar() {
-    const cache = leerCache();
-    const fresca = cache && (Date.now() - cache.t) < TTL;
-    if (fresca) {
-      mostrar(cache.d);
-      return; // caché válida: no se vuelve a consultar en esta carga
-    }
-    if (cache) mostrar(cache.d);
-    else if (seed) mostrar(seed);
-
-    fetch(URL, { headers: { accept: 'application/json' } })
-      .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
-      .then(function (j) {
-        if (j && j.current && j.daily && Array.isArray(j.daily.time) && j.daily.time.length) {
-          guardarCache(j);
-          mostrar(j);
-        } else {
-          mostrarError();
-        }
-      })
-      .catch(function () { mostrarError(); });
+    const cache=leerCache();
+    if(cache){mostrar(cache.d);return;}
+    try{if(seed)mostrar(validateWeather(seed));}catch{}
+    const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),8000);
+    fetch(URL,{headers:{accept:'application/json'},signal:controller.signal})
+      .then(r=>{if(!r.ok)throw Error('Weather HTTP');return r.json();})
+      .then(j=>{const data=validateWeather(j);guardarCache(data);mostrar(data);})
+      .catch(()=>mostrarError()).finally(()=>clearTimeout(timer));
   })();
 })();
 </script>

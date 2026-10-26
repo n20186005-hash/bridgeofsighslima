@@ -5,7 +5,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <article class="prose-legal mx-auto max-w-4xl px-5 py-16 lg:px-8">
     <p class="text-sm font-bold uppercase tracking-[.18em] text-[#24574d]">Documento legal</p>
     <h1 class="serif mt-3 text-5xl font-bold text-[#48151f]">Política de privacidad</h1>
-    <p class="mt-4 font-semibold text-[#6b5a50]">Última actualización: septiembre de 2026</p>
+    <p class="mt-4 font-semibold text-[#6b5a50]">Última actualización: 25 de octubre de 2026</p>
 
     <p class="mt-8">Esta política explica qué datos puede tratar esta guía independiente del Puente de los Suspiros, por qué se utilizan y qué opciones tiene el visitante. Procuramos aplicar un criterio de minimización de datos.</p>
 
@@ -33,8 +33,13 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <h3>Fotografías</h3>
     <p>Las imágenes proceden de Wikimedia Commons y se muestran conforme a las licencias indicadas en nuestros Términos de uso. Cuando una imagen se sirve directamente desde un dominio externo, dicho proveedor puede recibir datos técnicos de la solicitud.</p>
     <h3>Open-Meteo (pronóstico del tiempo)</h3>
-    <p>El panel de clima de la página principal obtiene datos de Open-Meteo. La consulta puede realizarse desde el navegador del visitante al abrir la página; Open-Meteo puede recibir datos técnicos de la solicitud conforme a su propia política. La información se guarda temporalmente en el almacenamiento local del navegador (máximo 30 minutos) para evitar consultas repetidas.</p>
+    <p>El panel de clima de la página principal obtiene datos de Open-Meteo. La consulta puede realizarse desde el navegador del visitante al abrir la página; Open-Meteo puede recibir datos técnicos de la solicitud conforme a su propia política. La información se guarda temporalmente en el almacenamiento local del navegador (hasta 30 minutos, con comprobación de la fecha del proveedor) para evitar consultas repetidas.</p>
 
+    <h3>Retirar la elección de análisis</h3>
+    <p>El panel de cookies permite activar Google Analytics después de comprobar el guardado de la elección. Al rechazarlo, se desactiva de inmediato en esta página incluso si falla el almacenamiento. Si no se puede confirmar el guardado, otra página o una nueva visita podría leer una autorización anterior; el panel informa esa limitación. El control solo administra Google Analytics.</p>
+    <h3>Hospedaje y medición independiente</h3>
+    <p>Cloudflare puede tratar datos técnicos de entrega y seguridad y aportar medición de rendimiento según la configuración del alojamiento. Estos servicios son independientes del control de Google Analytics. La presencia de un script no demuestra por sí sola que se hayan enviado datos correctamente. Consulte <a class="underline" href="https://developers.cloudflare.com/web-analytics/data-origin-and-collection/">la documentación de origen y recopilación de datos de Cloudflare</a>.</p>
+    <p>Las fotografías se sirven desde este sitio, con autoría, fecha, enlaces de origen, licencia y modificaciones junto a cada imagen. El service worker puede conservar copias locales para uso offline; pueden estar desactualizadas. Puede borrar los datos del sitio en su navegador.</p>
     <h2>Base jurídica y consentimiento</h2>
     <p>Los elementos imprescindibles para prestar el sitio se apoyan en nuestro interés legítimo de mantener una guía funcional y segura. La analítica opcional se basa en su consentimiento y permanece desactivada hasta que la habilita.</p>
 

@@ -5,14 +5,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <section class="mx-auto max-w-4xl px-5 py-16 lg:px-8">
     <p class="text-sm font-bold uppercase tracking-[.18em] text-[#24574d]">Preferencias de privacidad</p>
     <h1 class="serif mt-3 text-5xl font-bold text-[#48151f]">Configuración de cookies</h1>
-    <p class="mt-4 font-semibold text-[#6b5a50]">Última actualización: septiembre de 2026</p>
+    <p class="mt-4 font-semibold text-[#6b5a50]">Última actualización: 25 de octubre de 2026</p>
     <p class="mt-7 max-w-3xl text-lg text-[#55463e]">Usamos el mínimo almacenamiento necesario para recordar sus preferencias. Las cookies de análisis permanecen desactivadas hasta que usted las habilite.</p>
 
     <form id="cookie-form" class="mt-10 space-y-5">
       <div class="rounded-3xl border border-[#d8c8b2] bg-[#fffaf1] p-6 sm:p-7">
         <div class="flex items-start justify-between gap-6">
-          <div><h2 class="serif text-2xl font-bold text-[#48151f]">Cookies necesarias</h2><p class="mt-2 text-[#5a4b42]">Son esenciales para recordar su elección de consentimiento y no pueden desactivarse desde este panel.</p></div>
-          <span class="rounded-full bg-[#24574d] px-3 py-1 text-xs font-bold text-white">Siempre activas</span>
+          <div><h2 class="serif text-2xl font-bold text-[#48151f]">Almacenamiento local</h2><p class="mt-2 text-[#5a4b42]">El navegador conserva la elección de análisis, la previsión en caché y copias offline. Puede borrar los datos del sitio en los ajustes del navegador.</p></div>
+          <span class="rounded-full bg-[#24574d] px-3 py-1 text-xs font-bold text-white">Recursos locales</span>
         </div>
       </div>
 
@@ -21,12 +21,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
         <input id="analytics" name="analytics" type="checkbox" class="mt-2 h-6 w-6 accent-[#6e2430]" />
       </label>
 
-      <label class="flex cursor-pointer items-start justify-between gap-6 rounded-3xl border border-[#d8c8b2] bg-[#fffaf1] p-6 sm:p-7">
-        <span><strong class="serif block text-2xl text-[#48151f]">Preferencias</strong><span class="mt-2 block text-[#5a4b42]">Permite recordar opciones de presentación o navegación que puedan incorporarse al sitio.</span></span>
-        <input id="preferences" name="preferences" type="checkbox" class="mt-2 h-6 w-6 accent-[#6e2430]" />
-      </label>
-
-      <label class="flex cursor-pointer items-start justify-between gap-6 rounded-3xl border border-[#d8c8b2] bg-[#fffaf1] p-6 sm:p-7">
+<label class="flex cursor-pointer items-start justify-between gap-6 rounded-3xl border border-[#d8c8b2] bg-[#fffaf1] p-6 sm:p-7">
         <span><strong class="serif block text-2xl text-[#48151f]">Marketing</strong><span class="mt-2 block text-[#5a4b42]">Este sitio no activa publicidad personalizada. La opción se mantiene desactivada y no carga plataformas publicitarias.</span></span>
         <input id="marketing" name="marketing" type="checkbox" class="mt-2 h-6 w-6 accent-[#6e2430]" disabled />
       </label>
@@ -47,31 +42,6 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </section>
 
   <script is:inline>
-    (() => {
-      const key = 'puente-cookie-preferences';
-      const form = document.getElementById('cookie-form');
-      const analytics = document.getElementById('analytics');
-      const preferences = document.getElementById('preferences');
-      const reject = document.getElementById('reject-all');
-      const status = document.getElementById('cookie-status');
-      try {
-        const saved = JSON.parse(localStorage.getItem(key) || 'null');
-        if (saved) {
-          analytics.checked = Boolean(saved.analytics);
-          preferences.checked = Boolean(saved.preferences);
-        }
-      } catch (_) {}
-      form?.addEventListener('submit', (event) => {
-        event.preventDefault();
-        localStorage.setItem(key, JSON.stringify({ necessary: true, analytics: analytics.checked, preferences: preferences.checked, marketing: false }));
-        status.textContent = 'Preferencias guardadas. Los cambios se aplicarán completamente al volver a cargar la página.';
-      });
-      reject?.addEventListener('click', () => {
-        analytics.checked = false;
-        preferences.checked = false;
-        localStorage.setItem(key, JSON.stringify({ necessary: true, analytics: false, preferences: false, marketing: false }));
-        status.textContent = 'Se han rechazado todas las categorías opcionales.';
-      });
-    })();
+  (()=>{const api=window.bridgeAnalytics,form=document.getElementById('cookie-form'),box=document.getElementById('analytics'),status=document.getElementById('cookie-status'),reject=document.getElementById('reject-all');if(!api||!form||!box||!status||!reject)return;let limited=false;const sync=()=>box.checked=api.get();sync();const save=allow=>{const r=api.set(allow);limited=!r.saved&&!r.sharedOff;sync();status.textContent=r.saved?(r.effective?'Análisis activado; elección guardada y comprobada en este navegador.':'Análisis desactivado; elección guardada y comprobada en este navegador.'):(r.sharedOff?'No se pudo guardar la activación. Análisis desactivado.':'Análisis desactivado en esta página. No se pudo confirmar el cambio en el almacenamiento; otra página o una nueva visita podría leer una autorización anterior.');};form.addEventListener('submit',e=>{e.preventDefault();save(box.checked)});reject.addEventListener('click',()=>save(false));window.addEventListener('storage',()=>{sync();if(!limited)status.textContent=api.get()?'Análisis activo según la preferencia disponible.':'Análisis desactivado en esta página.';});})();
   </script>
 </BaseLayout>

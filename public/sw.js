@@ -1,7 +1,7 @@
 // Service Worker de la Guía del Puente de los Suspiros.
 // Estrategia: network-first para navegación (con respaldo offline al inicio
 // del sitio) y cache-first para el resto de recursos estáticos del mismo origen.
-const CACHE = 'puente-suspiros-v1-2026-09-03';
+const CACHE = 'puente-suspiros-v2-2026-10-25';
 const SHELL = ['/', '/site.webmanifest', '/icon-192.png', '/icon-512.png', '/favicon.svg'];
 
 self.addEventListener('install', (event) => {
@@ -29,11 +29,11 @@ self.addEventListener('fetch', (event) => {
       fetch(req)
         .then((res) => {
           const copy = res.clone();
-          caches.open(CACHE).then((cache) => cache.put(req, copy)).catch(() => {});
+          if(res.ok) event.waitUntil(caches.open(CACHE).then((cache) => cache.put(req, copy)).catch(() => {}));
           return res;
         })
         .catch(() =>
-          caches.match(req).then((hit) => hit || caches.match('/'))
+          caches.match(req).then((hit) => hit || new Response('Página no disponible sin conexión / Page unavailable offline',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}}))
         )
     );
     return;

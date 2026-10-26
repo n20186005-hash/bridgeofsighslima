@@ -1,6 +1,3 @@
-# pnpm v11: política explícita de scripts de compilación.
-# esbuild (lo usa Vite/Astro) y workerd (lo usa Wrangler) son binarios
-# nativos publicados como dependencias opcionales; se autoriza su script.
 allowBuilds:
-  esbuild: true
-  workerd: true
+  esbuild@0.28.1 || 0.28.2: true
+  workerd@1.20260831.1: true

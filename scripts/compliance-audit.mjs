@@ -40,7 +40,7 @@ for (const [n, f] of [['/', index], ['/cookies/', cookies], ['/privacidad/', pri
   check(`og:url coincide ${n}`, Boolean(og) && og === esperado, og);
 }
 
-check('og:image absoluta (hero Wikimedia)', index.includes('property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/PUENTE_DE_LOS_SUSPIROS.jpg/1600px'));
+check('og:image absoluta y local', index.includes('property="og:image" content="'+DOMAIN+'/images/puente-suspiros-hero.jpg"'));
 check('og:image:alt presente', /property="og:image:alt" content="[^"]+"/.test(index));
 check('twitter:image:alt presente', /name="twitter:image:alt" content="[^"]+"/.test(index));
 check('og:locale es_PE', /property="og:locale" content="es_PE"/.test(index));
@@ -61,7 +61,7 @@ for (const id of ['historia', 'visita', 'como-llegar', 'alrededores', 'preguntas
   check(`ancla de navegación #${id}`, new RegExp(`href="/#${id}"`).test(index));
 }
 const faqVisible = (index.match(/<details /g) || []).length;
-check('FAQ visible coincide con FAQPage', faqVisible === 8, faqVisible);
+check('FAQ visible no vacía', faqVisible > 0, faqVisible);
 
 // ---- JSON-LD de portada ----------------------------------------------------
 const ld = [...index.matchAll(/<script type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)]
@@ -83,18 +83,18 @@ check('WebPage about refiere al atractivo', page && place && page.about && page.
 check('WebPage con dateModified', page && /^\d{4}-\d{2}-\d{2}$/.test(page.dateModified || ''));
 check('entidad con geo', place && place.geo && Math.abs(place.geo.latitude + 12.1491) < 0.01 && Math.abs(place.geo.longitude + 77.0226) < 0.01);
 check('entidad con hasMap', place && place.hasMap === 'https://maps.app.goo.gl/JtXw9jp7DcAQgdRu5');
-check('entidad con aggregateRating 4.5/24561', place && place.aggregateRating && place.aggregateRating.ratingValue === '4.5' && place.aggregateRating.reviewCount === '24561');
-check('entidad con openingHours 24 h', place && place.openingHoursSpecification && place.openingHoursSpecification[0].closes === '23:59');
+check('entidad sin calificación propia', place && !('aggregateRating' in place));
+check('entidad sin horario operativo no verificado', place && !('openingHoursSpecification' in place));
 const imgsPlace = Array.isArray(place?.image) ? place.image : [place?.image];
-check('entidad con image (hero)', imgsPlace.some((u) => String(u).includes('/1600px-PUENTE_DE_LOS_SUSPIROS.jpg')));
+check('entidad con imagen local existente', imgsPlace.includes(DOMAIN+'/images/puente-suspiros-hero.jpg') && exists('public/images/puente-suspiros-hero.jpg'));
 check('entidad con NAP', place && place.address && place.address.postalCode === '15063' && place.address.addressCountry === 'PE');
-check('FAQPage con 8 preguntas', faq && Array.isArray(faq.mainEntity) && faq.mainEntity.length === 8);
+check('FAQPage coincide con preguntas visibles', faq && Array.isArray(faq.mainEntity) && faq.mainEntity.length === faqVisible && faqVisible > 0);
 
 // ---- PWA / service worker --------------------------------------------------
 const sw = src('public/sw.js');
-check('SW con caché versionada', /const CACHE = 'puente-suspiros-v1-2026-09-03'/.test(sw));
+check('SW con caché versionada', /const CACHE = 'puente-suspiros-v2-2026-10-25'/.test(sw));
 check('SW mismo origen', /url.origin !== self.location.origin/.test(sw));
-check('SW offline -> "/"', /caches.match\('\/'\)/.test(sw));
+check('SW conserva página correcta o error offline', sw.includes('caches.match(req)') && sw.includes('status:503') && !sw.includes("hit || caches.match('/')"));
 const manifest = JSON.parse(src('public/site.webmanifest'));
 check('manifest lang es-PE start_url /', manifest.lang === 'es-PE' && manifest.start_url === '/');
 check('manifest theme_color', manifest.theme_color === '#6e2430');
@@ -141,13 +141,13 @@ const walk = (dir) => {
 };
 walk('');
 check('única medición GA4 G-HXM22WWPKP', ids.size === 1 && ids.has('G-HXM22WWPKP'), [...ids].join(','));
-check('gtag cargado solo con consentimiento', /prefs\?\.analytics/.test(base) && /anonymize_ip: true/.test(base));
+check('control de análisis con persistencia verificada', base.includes('src="/analytics.js"') && src('public/analytics.js').includes('if(read()!==allow)') && src('public/analytics.js').includes('deniedHere') && src('public/analytics.js').includes('if(initialized)return'));
 check('registro SW fuera de desarrollo local', /\.includes\('local' \+ 'host'\)/.test(base));
 
 // ---- clima / contenido externo ---------------------------------------------
-check('snapshot meteorológico embebido', /<script type="application\/json" id="weather-seed">[^<]+\{/.test(index));
+check('snapshot meteorológico embebido como JSON', (()=>{try{const m=index.match(/<script[^>]*id="weather-seed"[^>]*>([\s\S]*?)<\/script>/);if(!m)return false;const value=JSON.parse(m[1]);return value===null||Boolean(value.current&&value.daily);}catch{return false;}})());
 check('fallback SENAMHI (noscript)', /SENAMHI/.test(index) && /<noscript>/.test(index));
-check('atribución fotográfica visible', /CC BY-SA 4\.0/.test(index) && /Derechos de imagen/.test(src('src/components/Footer.astro')));
+check('atribución fotográfica visible', /CC BY-SA 4\.0/.test(index) && index.includes('creativecommons.org/licenses/by-sa/4.0/') && index.includes('commons.wikimedia.org/wiki/File:'));
 const bajo = (s) => s.toLowerCase();
 for (const a of ['hlaiza', 'ivan brehaut', 'nina zaitceva', 'herwarth morales']) {
   check(`autor "${a}" citado en portada y términos`, bajo(index).includes(a) && bajo(terminos).includes(a));
